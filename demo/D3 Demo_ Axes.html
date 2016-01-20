@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!-- saved from url=(0065)http://alignedleft.com/content/03-tutorials/01-d3/160-axes/6.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <title>D3 Demo: Axes</title>
+        <script type="text/javascript" src="./D3 Demo_ Axes_files/d3.v3.min.js"></script>
+        <style type="text/css">
+
+            .axis path,
+            .axis line {
+                fill: none;
+                stroke: black;
+                shape-rendering: crispEdges;
+            }
+
+            .axis text {
+                font-family: sans-serif;
+                font-size: 11px;
+            }
+
+        </style>
+    </head>
+    <body>
+        <script type="text/javascript">
+
+            //Width and height
+            var w = 500;
+            var h = 300;
+            var padding = 30;
+
+            /*
+             //Static dataset
+             var dataset = [
+             [5, 20], [480, 90], [250, 50], [100, 33], [330, 95],
+             [410, 12], [475, 44], [25, 67], [85, 21], [220, 88],
+             [600, 150]
+             ];
+             */
+
+            //Dynamic, random dataset
+            var dataset = [];					//Initialize empty array
+            var numDataPoints = 50;				//Number of dummy data points to create
+            var xRange = Math.random() * 1000;	//Max range of new x values
+            var yRange = Math.random() * 1000;	//Max range of new y values
+            for (var i = 0; i < numDataPoints; i++) {					//Loop numDataPoints times
+                var newNumber1 = Math.round(Math.random() * xRange);	//New random integer
+                var newNumber2 = Math.round(Math.random() * yRange);	//New random integer
+                dataset.push([newNumber1, newNumber2]);					//Add new number to array
+            }
+
+            //Create scale functions
+            var xScale = d3.scale.linear()
+                    .domain([0, d3.max(dataset, function (d) {
+                            return d[0];
+                        })])
+                    .range([padding, w - padding * 2]);
+
+            var yScale = d3.scale.linear()
+                    .domain([0, d3.max(dataset, function (d) {
+                            return d[1];
+                        })])
+                    .range([h - padding, padding]);
+
+            var rScale = d3.scale.linear()
+                    .domain([0, d3.max(dataset, function (d) {
+                            return d[1];
+                        })])
+                    .range([2, 5]);
+
+            //Define X axis
+            var xAxis = d3.svg.axis()
+                    .scale(xScale)
+                    .orient("bottom")
+                    .ticks(5);
+
+            //Define Y axis
+            var yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .orient("left")
+                    .ticks(5);
+
+            //Create SVG element
+            var svg = d3.select("body")
+                    .append("svg")
+                    .attr("width", w)
+                    .attr("height", h);
+
+            //Create circles
+            svg.selectAll("circle")
+                    .data(dataset)
+                    .enter()
+                    .append("circle")
+                    .attr("cx", function (d) {
+                        return xScale(d[0]);
+                    })
+                    .attr("cy", function (d) {
+                        return yScale(d[1]);
+                    })
+                    .attr("r", function (d) {
+                        return rScale(d[1]);
+                    });
+
+            /*
+             //Create labels
+             svg.selectAll("text")
+             .data(dataset)
+             .enter()
+             .append("text")
+             .text(function(d) {
+             return d[0] + "," + d[1];
+             })
+             .attr("x", function(d) {
+             return xScale(d[0]);
+             })
+             .attr("y", function(d) {
+             return yScale(d[1]);
+             })
+             .attr("font-family", "sans-serif")
+             .attr("font-size", "11px")
+             .attr("fill", "red");
+             */
+
+            //Create X axis
+            svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(0," + (h - padding) + ")")
+                    .call(xAxis);
+
+            //Create Y axis
+            svg.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(" + padding + ",0)")
+                    .call(yAxis);
+
+        </script><svg width="500" height="300"><circle cx="64.01548672566372" cy="110.28469750889681" r="3.99644128113879"></circle><circle cx="138.8495575221239" cy="66.29893238434164" r="4.5462633451957295"></circle><circle cx="169.2367256637168" cy="100.46263345195729" r="4.119217081850534"></circle><circle cx="201.891592920354" cy="198.25622775800713" r="2.8967971530249113"></circle><circle cx="108.00884955752213" cy="130.355871886121" r="3.7455516014234873"></circle><circle cx="311.64823008849555" cy="230.711743772242" r="2.491103202846975"></circle><circle cx="162.43362831858408" cy="36.40569395017795" r="4.919928825622776"></circle><circle cx="410.5199115044248" cy="181.1743772241993" r="3.110320284697509"></circle><circle cx="79.88938053097345" cy="192.27758007117438" r="2.9715302491103204"></circle><circle cx="440" cy="156.83274021352315" r="3.4145907473309607"></circle><circle cx="70.36504424778761" cy="88.932384341637" r="4.263345195729538"></circle><circle cx="191.0066371681416" cy="39.39501779359432" r="4.882562277580071"></circle><circle cx="356.5486725663717" cy="126.08540925266902" r="3.798932384341637"></circle><circle cx="350.6526548672566" cy="85.08896797153028" r="4.3113879003558715"></circle><circle cx="243.61725663716814" cy="261.4590747330961" r="2.106761565836299"></circle><circle cx="97.12389380530973" cy="112.41992882562278" r="3.969750889679715"></circle><circle cx="219.5796460176991" cy="225.58718861209965" r="2.5551601423487544"></circle><circle cx="223.66150442477874" cy="251.6370106761566" r="2.2295373665480427"></circle><circle cx="343.396017699115" cy="267.43772241992883" r="2.0320284697508897"></circle><circle cx="304.84513274336285" cy="237.5444839857651" r="2.4056939501779357"></circle><circle cx="44.059734513274336" cy="209.7864768683274" r="2.7526690391459074"></circle><circle cx="61.74778761061947" cy="251.6370106761566" r="2.2295373665480427"></circle><circle cx="288.0641592920354" cy="109.4306049822064" r="4.007117437722419"></circle><circle cx="116.62610619469027" cy="250.78291814946618" r="2.2402135231316724"></circle><circle cx="271.283185840708" cy="171.77935943060498" r="3.227758007117438"></circle><circle cx="438.1858407079646" cy="214.05693950177937" r="2.6992882562277583"></circle><circle cx="215.0442477876106" cy="147.01067615658363" r="3.5373665480427046"></circle><circle cx="210.05530973451326" cy="114.98220640569394" r="3.9377224199288254"></circle><circle cx="148.3738938053097" cy="260.6049822064057" r="2.117437722419929"></circle><circle cx="376.50442477876106" cy="84.66192170818508" r="4.316725978647687"></circle><circle cx="298.0420353982301" cy="176.04982206405697" r="3.1743772241992882"></circle><circle cx="327.5221238938053" cy="70.14234875444839" r="4.498220640569395"></circle><circle cx="421.40486725663715" cy="111.5658362989324" r="3.980427046263345"></circle><circle cx="221.84734513274336" cy="100.88967971530249" r="4.1138790035587185"></circle><circle cx="300.30973451327435" cy="67.15302491103202" r="4.5355871886121"></circle><circle cx="103.47345132743362" cy="193.98576512455517" r="2.9501779359430604"></circle><circle cx="160.16592920353983" cy="91.067615658363" r="4.236654804270462"></circle><circle cx="337.5" cy="255.48042704626334" r="2.1814946619217084"></circle><circle cx="96.67035398230088" cy="111.99288256227757" r="3.97508896797153"></circle><circle cx="318.90486725663715" cy="139.3238434163701" r="3.6334519572953736"></circle><circle cx="379.22566371681415" cy="161.53024911032028" r="3.3558718861209966"></circle><circle cx="179.2146017699115" cy="189.288256227758" r="3.008896797153025"></circle><circle cx="238.17477876106193" cy="267.43772241992883" r="2.0320284697508897"></circle><circle cx="101.65929203539822" cy="50.4982206405694" r="4.7437722419928825"></circle><circle cx="34.5353982300885" cy="68.86120996441284" r="4.514234875444839"></circle><circle cx="35.89601769911504" cy="138.89679715302492" r="3.6387900355871885"></circle><circle cx="261.7588495575221" cy="152.98932384341637" r="3.4626334519572954"></circle><circle cx="70.81858407079646" cy="36.832740213523124" r="4.91459074733096"></circle><circle cx="59.48008849557522" cy="248.64768683274022" r="2.2669039145907472"></circle><circle cx="321.62610619469024" cy="30" r="5"></circle><g class="axis" transform="translate(0,270)"><g transform="translate(30,0)" style="opacity: 1;"><line class="tick" y2="6" x2="0"></line><text y="9" x="0" dy=".71em" style="text-anchor: middle;">0</text></g><g transform="translate(120.70796460176992,0)" style="opacity: 1;"><line class="tick" y2="6" x2="0"></line><text y="9" x="0" dy=".71em" style="text-anchor: middle;">200</text></g><g transform="translate(211.41592920353983,0)" style="opacity: 1;"><line class="tick" y2="6" x2="0"></line><text y="9" x="0" dy=".71em" style="text-anchor: middle;">400</text></g><g transform="translate(302.12389380530976,0)" style="opacity: 1;"><line class="tick" y2="6" x2="0"></line><text y="9" x="0" dy=".71em" style="text-anchor: middle;">600</text></g><g transform="translate(392.83185840707966,0)" style="opacity: 1;"><line class="tick" y2="6" x2="0"></line><text y="9" x="0" dy=".71em" style="text-anchor: middle;">800</text></g><path class="domain" d="M30,6V0H440V6"></path></g><g class="axis" transform="translate(30,0)"><g transform="translate(0,270)" style="opacity: 1;"><line class="tick" x2="-6" y2="0"></line><text x="-9" y="0" dy=".32em" style="text-anchor: end;">0</text></g><g transform="translate(0,227.29537366548044)" style="opacity: 1;"><line class="tick" x2="-6" y2="0"></line><text x="-9" y="0" dy=".32em" style="text-anchor: end;">100</text></g><g transform="translate(0,184.59074733096088)" style="opacity: 1;"><line class="tick" x2="-6" y2="0"></line><text x="-9" y="0" dy=".32em" style="text-anchor: end;">200</text></g><g transform="translate(0,141.8861209964413)" style="opacity: 1;"><line class="tick" x2="-6" y2="0"></line><text x="-9" y="0" dy=".32em" style="text-anchor: end;">300</text></g><g transform="translate(0,99.18149466192173)" style="opacity: 1;"><line class="tick" x2="-6" y2="0"></line><text x="-9" y="0" dy=".32em" style="text-anchor: end;">400</text></g><g transform="translate(0,56.476868327402144)" style="opacity: 1;"><line class="tick" x2="-6" y2="0"></line><text x="-9" y="0" dy=".32em" style="text-anchor: end;">500</text></g><path class="domain" d="M-6,30H0V270H-6"></path></g></svg>
+
+    </body></html>
