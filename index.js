@@ -34,6 +34,7 @@ var wait2load = setInterval(function () {
 
 var flyIn_year, flyOut_year, weather_year;
 var flyIn_month, flyOut_month, weather_month;
+var flyIn_day, flyOut_day, weather_day;
 
 function process_data() {
     var agg_year = d3.nest()
@@ -42,11 +43,16 @@ function process_data() {
     var agg_month = d3.nest()
             .rollup(function (d){return aggregate_flights(d);})
             .key(function (d) {return [d.Year,d.Month];});
+    var agg_day = d3.nest().rollup(function (d){return aggregate_flights(d);})
+            .key(function (d) {return [d.Year,d.Month,d.Day];});
     
     flyIn_year = agg_year.entries(flyIn);
     flyIn_month = agg_month.entries(flyIn);
+    flyIn_day = agg_day.entries(flyIn);
+    
     flyOut_year = agg_year.entries(flyOut);
     flyOut_month = agg_month.entries(flyOut);
+    flyOut_day = agg_day.entries(flyOut);
     
     weather_year = d3.nest()
             .rollup(function (d){return aggregate_weather(d);})
@@ -54,6 +60,9 @@ function process_data() {
     weather_month = d3.nest()
             .rollup(function (d){return aggregate_weather(d);})
             .key(function (d) {return [d.Year,d.Month];}).entries(weather);
+    weather_day = d3.nest()
+            .rollup(function (d){return aggregate_weather(d);})
+            .key(function (d) {return [d.Year,d.Month,d.Day];}).entries(weather);
 }
 
 function aggregate_flights(d){
@@ -64,10 +73,12 @@ function aggregate_flights(d){
     r.Total_Diverted = d3.sum(d, function(g){return g.Diverted;});
     r.Total_Delayed = d3.sum(d, function(g){return g.Delayed;});
     r.Total_Taxi = d3.sum(d, function(g){return g.Taxi;})/100;
+    r.Total_DelCan = r.Total_Cancelled + r.Total_Delayed;
     
     r.Perc_Cancelled = r.Total_Cancelled / r.Flights * 100;
     r.Perc_Diverted = r.Total_Diverted / r.Flights * 100;
     r.Perc_Delayed = r.Total_Delayed / r.Flights * 100;
+    r.Perc_DelCan = r.Total_DelCan / r.Flights * 100;
     r.Avrg_Taxi = r.Total_Taxi / r.Flights * 100;
     
     return r;
@@ -102,11 +113,13 @@ var flight_labels = {
     Total_Cancelled:["Flights Cancelled",30],
     Total_Diverted: ["Flights Diverted",30],
     Total_Delayed: ["Flights Delayed",30],
+    Total_DelCan: ["Flights Delayed or Cancelled",30],
     Total_Taxi: ["Total Taxi Time (In Hundred Minutes)",30],
     
     Perc_Cancelled: ["Percent of Cancelled Flights",30],
     Perc_Diverted: ["Percent of Diverted Flights",30],
     Perc_Delayed: ["Percent of Delayed Flights",30],
+    Perc_DelCan: ["Percent of Delayed and Cancelled Flights",30],
     Avrg_Taxi: ["Average Taxi Time (In Minutes)",30]
 };
 
@@ -118,6 +131,10 @@ var xRange = [pl,w-pr];
 var yRange = [h-pb,pt];
 var xCenter = (w-pr-pl)/2+pl;
 var yCenter = (h-pt-pb)/2+pt;
+var xCushion = .75;
+var yCushion = 1.0;
+var colWidth_ratio = 0.50;
+var colShift_ratio = 0.25;
 
 var svg = d3.select("body")
         .append("svg")
@@ -128,13 +145,12 @@ var svg = d3.select("body")
 
 var key_year = function(d){return +d.key;};
 var key_month = function(d){return +d.key.split(",")[1];};
+var key_day = function(d){return +d.key.split(",")[2];};
 
-function filter_year(data, year){
-    return data.filter(function(d){return d.key.split(",")[0]===year;});
-};
+
 
 function init() {
-    draw_flight_year("Avrg_Taxi","2006");
+    draw_flight_month("Perc_DelCan","2005","2");
     
 }
 
@@ -143,6 +159,7 @@ function draw_flight_year(field){
     params.field = field;
     params.data_flyIn = flyIn_year;
     params.data_flyOut = flyOut_year;
+    params.data = flyIn_year.concat(flyOut_year);
     params.key = key_year;
     params.by = "Year";
     draw_flight(params);
@@ -153,11 +170,32 @@ function draw_flight_month(field,year) {
     params.field = field;
     params.data_flyIn = filter_year(flyIn_month,year);
     params.data_flyOut = filter_year(flyOut_month,year);
+    params.data = flyIn_month.concat(flyOut_month);
     params.key = key_month;
     params.by = "Month";
     draw_flight(params);
 }
 
+function draw_flight_day(field,year,month) {
+    var params = {};
+    params.field = field;
+    params.data_flyIn = filter_month(flyIn_day,year,month);
+    params.data_flyOut = filter_month(flyOut_day,year,month);
+    params.data = flyIn_day.concat(flyOut_day);
+    params.key = key_day;
+    params.by = "Day";
+    draw_flight(params);
+}
+
+function filter_year(data, year){
+    return data.filter(function(d){return d.key.split(",")[0]===year;});
+};
+function filter_month(data,year, month){
+    return data.filter(function(d){
+        var YMD = d.key.split(",");
+        return YMD[0]===year && YMD[1]===month;
+    });
+};
 
 var xScale, yScale;
 var xAxis, yAxis;
@@ -166,7 +204,7 @@ var xAxis, yAxis;
 function draw_flight(params) {
     var data_flyIn = params.data_flyIn;
     var data_flyOut = params.data_flyOut;
-    var data = data_flyIn.concat(data_flyOut);
+    var data = params.data;
     var field = params.field;
     var label = flight_labels[field][0];
     var lbl_pad = flight_labels[field][1];
@@ -175,14 +213,14 @@ function draw_flight(params) {
     
     xScale = d3.scale.linear().rangeRound(xRange)
             .domain([
-        d3.min(data_flyIn, key)-0.5,
-        d3.max(data_flyIn, key)-(-0.5)
+        d3.min(data, key)-xCushion,
+        d3.max(data, key)-(-xCushion)
     ]);
 
     yScale = d3.scale.linear().rangeRound(yRange)
             .domain([
         0,
-        1.75 * d3.max(data, function (d) {return d.values[field];})]);
+        yCushion * d3.max(data, function (d) {return d.values[field];})]);
                                         
     xAxis = d3.svg.axis()
             .scale(xScale)
@@ -192,7 +230,7 @@ function draw_flight(params) {
                 if(by === "Month")
                     return ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d-1];
-                if(by === "Year")
+                else
                     return d;
             });
     svg.append("g")
@@ -208,18 +246,16 @@ function draw_flight(params) {
             .attr("transform", "translate("+pl+",0)")
             .call(yAxis);
     
-    var shift = 20/100;
-    
-    draw_bars(data_flyIn,key, field, xScale, yScale, -shift, "flyIn");
-    draw_bars(data_flyOut,key, field, xScale, yScale, +shift, "flyOut");
+    draw_bars(data_flyIn,key, field, xScale, yScale, +colShift_ratio, "flyIn");
+    draw_bars(data_flyOut,key, field, xScale, yScale,-colShift_ratio, "flyOut");
     draw_label(label, lbl_pad, yCenter, -90, 'y');
 
 }
 
-function draw_bars(data,key, field, xScale, yScale, shift, exClass) {
-    var col_width = (xScale(2) - xScale(1)) * 60/100;
+function draw_bars(data,key, field, xScale, yScale, shift_ratio, exClass) {
+    var col_width = (xScale(2) - xScale(1)) * colWidth_ratio;
     var col_bottom = yScale(0);
-    var col_shift = col_width * shift;
+    var col_shift = col_width * shift_ratio;
     
     svg.selectAll('rect .' + exClass)
             .data(data).enter()
