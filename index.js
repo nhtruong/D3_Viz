@@ -64,7 +64,6 @@ function process_data() {
             .rollup(function (d){return aggregate_weather(d);})
             .key(function (d) {return [d.Year,d.Month,d.Day];}).entries(weather);
 }
-
 function aggregate_flights(d){
     var r = {};
     
@@ -83,7 +82,6 @@ function aggregate_flights(d){
     
     return r;
 }
-
 function aggregate_weather(d){
     var r = {};
     
@@ -104,9 +102,6 @@ function aggregate_weather(d){
     
     return r;
 }
-
-
-
 
 var flight_labels = {
     Flights: ["Number of Flights",20],
@@ -150,7 +145,7 @@ var key_day = function(d){return +d.key.split(",")[2];};
 
 
 function init() {
-    draw_flight_month("Perc_DelCan","2005","2");
+    draw_flight_day("Perc_DelCan","2005","3");
     
 }
 
@@ -164,7 +159,6 @@ function draw_flight_year(field){
     params.by = "Year";
     draw_flight(params);
 }
-
 function draw_flight_month(field,year) {
     var params = {};
     params.field = field;
@@ -175,7 +169,6 @@ function draw_flight_month(field,year) {
     params.by = "Month";
     draw_flight(params);
 }
-
 function draw_flight_day(field,year,month) {
     var params = {};
     params.field = field;
@@ -197,8 +190,9 @@ function filter_month(data,year, month){
     });
 };
 
+var mode;
 var xScale, yScale;
-var xAxis, yAxis;
+var xAxis, yAxisLeft, yAxisRight;
 
 
 function draw_flight(params) {
@@ -211,13 +205,15 @@ function draw_flight(params) {
     var by = params.by;
     var key = params.key;
     
-    xScale = d3.scale.linear().rangeRound(xRange)
+    mode = by;
+    
+    var xScale = d3.scale.linear().rangeRound(xRange)
             .domain([
         d3.min(data, key)-xCushion,
         d3.max(data, key)-(-xCushion)
     ]);
 
-    yScale = d3.scale.linear().rangeRound(yRange)
+    var yScale = d3.scale.linear().rangeRound(yRange)
             .domain([
         0,
         yCushion * d3.max(data, function (d) {return d.values[field];})]);
@@ -234,17 +230,17 @@ function draw_flight(params) {
                     return d;
             });
     svg.append("g")
-            .attr("class", "axis")
+            .attr("class", "x axis")
             .attr("transform", "translate(0," + (h - pb) + ")")
             .call(xAxis);
     
-    yAxis = d3.svg.axis()
+    yAxisLeft = d3.svg.axis()
             .scale(yScale)
             .orient("left");
     svg.append("g")
-            .attr("class", "axis")
+            .attr("class", "y axis left")
             .attr("transform", "translate("+pl+",0)")
-            .call(yAxis);
+            .call(yAxisLeft);
     
     draw_bars(data_flyIn,key, field, xScale, yScale, +colShift_ratio, "flyIn");
     draw_bars(data_flyOut,key, field, xScale, yScale,-colShift_ratio, "flyOut");
@@ -257,19 +253,27 @@ function draw_bars(data,key, field, xScale, yScale, shift_ratio, exClass) {
     var col_bottom = yScale(0);
     var col_shift = col_width * shift_ratio;
     
-    svg.selectAll('rect .' + exClass)
-            .data(data).enter()
+    var bars = svg.selectAll('rect.' + exClass).data(data,key);
+    
+    bars.enter()
             .append('rect')
             .attr("class", "bar " + exClass)
             .attr("x", function (d) {
                 return xScale(key(d)) - col_width/2 + col_shift;
-            }).attr("y", function (d) {
-                return yScale(d.values[field]);
             }).attr("width", function () {
                 return col_width;
+            }).attr("y", col_bottom).attr("height", 0);
+            
+    bars.transition().duration(function(d,i){return 100+i*50;})
+            .attr("y", function (d) {
+                return yScale(d.values[field]);
             }).attr("height", function (d) {
-                return col_bottom-yScale(d.values[field]);
-            });
+        return col_bottom - yScale(d.values[field]);
+    }).style("fill-opacity", 1).style("stroke-opacity", 1);
+            
+    bars.exit().transition().duration(1000)
+            .style("fill-opacity",0).style("stroke-opacity",0);
+    bars.exit().transition().delay(1000).remove();
 }
 
 function draw_label(text, xAnchor, yAnchor, rotation, exClass) {
