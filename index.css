@@ -3,7 +3,10 @@ svg{
     border: solid 1px gray;
     display: block;
 }
-
+.footer, .header{
+    margin:10px auto;
+    width: 980px;
+}
 .axis path,
 .axis line {
     fill: none;
@@ -16,14 +19,7 @@ svg{
     font-size: 11px;
 }
 
-.bar.flyOut{
-    fill: blue;
+.bar{
+    fill: white;
     stroke: black;
-    opacity: 0.75;
-}
-
-.bar.flyIn{
-    fill: red;
-    stroke: black;
-    opacity: 0.75;
 }

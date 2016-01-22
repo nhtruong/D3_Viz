@@ -117,8 +117,14 @@ var flight_labels = {
     Perc_DelCan: ["Percent of Delayed and Cancelled Flights",30],
     Avrg_Taxi: ["Average Taxi Time (In Minutes)",30]
 };
+var month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-/* ----------------------- SETUP SVG ---------------------------------------- */
+var colorSet_1 = ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c',
+    '#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99'];
+var colorSet_2 = ['#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462',
+    '#b3de69','#fccde5','#d9d9d9','#bc80bd','#ccebc5'];
+/* --------------------------  Setup Layout  -------------------------------- */
 
 var w = 1200, h = 640;
 var pt = 20, pr = 70, pb = 40, pl = 70;
@@ -127,57 +133,46 @@ var yRange = [h-pb,pt];
 var xCenter = (w-pr-pl)/2+pl;
 var yCenter = (h-pt-pb)/2+pt;
 var xCushion = .75;
-var yCushion = 1.0;
+var yCushion = 1.1;
 var colWidth_ratio = 0.50;
 var colShift_ratio = 0.25;
 
-var svg = d3.select("body")
-        .append("svg")
-        .attr("width", w)
-        .attr("height", h);
+var svg = d3.select("body").append("svg").style("width", w).style("height", h);
 
+var header = $('<div>').prependTo($('body')).addClass("header");
+var footer = $('<div>').appendTo($('body')).addClass("footer");
+
+var flySelector = $('<select>').appendTo(footer).change(function(){
+    draw_flight($(this).val(),"2006","3");
+});
+for(var val in flight_labels)
+    $('<option>').val(val).text(flight_labels[val][0]).appendTo(flySelector);
+
+var yearSelector = $('<select>').appendTo(footer).change(function(){
+    draw_flight(curr_field_left,$(this).val(),curr_month);
+});
+for(var year = 2002; year <= 2008; year++)
+    $('<option>').val(year).text(year).appendTo(yearSelector);
+
+var monthSelector = $('<select>').appendTo(footer).change(function(){
+    draw_flight(curr_field_left,curr_year,$(this).val());
+});
+for(var year = 1; year <= 12; year++)
+    $('<option>').val(year).text(year).appendTo(monthSelector);
+
+curr_month = 1;
+curr_year = 2002;
 /* ----------------------- SETUP SVG ---------------------------------------- */
 
-var key_year = function(d){return +d.key;};
-var key_month = function(d){return +d.key.split(",")[1];};
-var key_day = function(d){return +d.key.split(",")[2];};
+var xValue_year = function(d){return +d.key;};
+var xValue_month = function(d){return +d.key.split(",")[1];};
+var xValue_day = function(d){return +d.key.split(",")[2];};
 
 
 
 function init() {
-    draw_flight_day("Perc_DelCan","2005","3");
+    draw_flight("Perc_DelCan","2002");
     
-}
-
-function draw_flight_year(field){
-    var params = {};
-    params.field = field;
-    params.data_flyIn = flyIn_year;
-    params.data_flyOut = flyOut_year;
-    params.data = flyIn_year.concat(flyOut_year);
-    params.key = key_year;
-    params.by = "Year";
-    draw_flight(params);
-}
-function draw_flight_month(field,year) {
-    var params = {};
-    params.field = field;
-    params.data_flyIn = filter_year(flyIn_month,year);
-    params.data_flyOut = filter_year(flyOut_month,year);
-    params.data = flyIn_month.concat(flyOut_month);
-    params.key = key_month;
-    params.by = "Month";
-    draw_flight(params);
-}
-function draw_flight_day(field,year,month) {
-    var params = {};
-    params.field = field;
-    params.data_flyIn = filter_month(flyIn_day,year,month);
-    params.data_flyOut = filter_month(flyOut_day,year,month);
-    params.data = flyIn_day.concat(flyOut_day);
-    params.key = key_day;
-    params.by = "Day";
-    draw_flight(params);
 }
 
 function filter_year(data, year){
@@ -190,91 +185,148 @@ function filter_month(data,year, month){
     });
 };
 
-var mode;
-var xScale, yScale;
+
+var curr_mode, curr_field_left, curr_field_right;
+var curr_year, curr_month;
+var xScale, yScaleLeft, yScaleRight;
 var xAxis, yAxisLeft, yAxisRight;
+var xLabel, yLabelLeft, yLabelRight;
+var colorIn, colorOut;
 
-
-function draw_flight(params) {
-    var data_flyIn = params.data_flyIn;
-    var data_flyOut = params.data_flyOut;
-    var data = params.data;
-    var field = params.field;
-    var label = flight_labels[field][0];
-    var lbl_pad = flight_labels[field][1];
-    var by = params.by;
-    var key = params.key;
+function draw_flight(field,year,month) {
+    var mode, data_flyIn, data_flyOut, key;
     
-    mode = by;
+    if (year === undefined) {
+        mode = "Year";
+        data_flyIn = flyIn_year;
+        data_flyOut = flyOut_year;
+        key = xValue_year;
+    } else if (month === undefined) {
+        mode = "Month";
+        data_flyIn = filter_year(flyIn_month,year);
+        data_flyOut = filter_year(flyOut_month,year);
+        key = xValue_month;
+    } else {
+        mode = "Day";
+        data_flyIn = filter_month(flyIn_day,year,month);
+        data_flyOut = filter_month(flyOut_day,year,month);
+        key = xValue_day;
+    }
     
-    var xScale = d3.scale.linear().rangeRound(xRange)
-            .domain([
-        d3.min(data, key)-xCushion,
-        d3.max(data, key)-(-xCushion)
-    ]);
-
-    var yScale = d3.scale.linear().rangeRound(yRange)
-            .domain([
-        0,
-        yCushion * d3.max(data, function (d) {return d.values[field];})]);
-                                        
-    xAxis = d3.svg.axis()
-            .scale(xScale)
-            .orient("bottom")
-            .ticks(data_flyIn.length).
-            tickFormat(function(d){ 
-                if(by === "Month")
-                    return ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d-1];
-                else
-                    return d;
-            });
-    svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + (h - pb) + ")")
-            .call(xAxis);
+    draw_xAxis(mode);
+    draw_yAxisLeft(mode,field);
+     
+    draw_bars(data_flyIn, key, field, +colShift_ratio, "flyIn", colorSet_1);
+    draw_bars(data_flyOut, key, field, -colShift_ratio, "flyOut", colorSet_2);
     
-    yAxisLeft = d3.svg.axis()
-            .scale(yScale)
-            .orient("left");
-    svg.append("g")
-            .attr("class", "y axis left")
-            .attr("transform", "translate("+pl+",0)")
-            .call(yAxisLeft);
-    
-    draw_bars(data_flyIn,key, field, xScale, yScale, +colShift_ratio, "flyIn");
-    draw_bars(data_flyOut,key, field, xScale, yScale,-colShift_ratio, "flyOut");
-    draw_label(label, lbl_pad, yCenter, -90, 'y');
+    curr_mode = mode;
+    curr_field_left = field;
+    curr_month = month;
+    curr_year = year;
 
 }
 
-function draw_bars(data,key, field, xScale, yScale, shift_ratio, exClass) {
+function draw_bars(data,key, field, shift_ratio, exClass, colors) {
     var col_width = (xScale(2) - xScale(1)) * colWidth_ratio;
-    var col_bottom = yScale(0);
+    var col_bottom = yScaleLeft(0);
     var col_shift = col_width * shift_ratio;
     
-    var bars = svg.selectAll('rect.' + exClass).data(data,key);
+    var bars = svg.selectAll('rect.bar.' + exClass)
+            .data(data,key);
     
-    bars.enter()
-            .append('rect')
+    bars.exit().transition().duration(500)
+            .attr("y", col_bottom).attr("height", 0)
+            .style("fill-opacity",0).style("stroke-opacity",0).remove();
+    
+        
+    bars.enter().append('rect')
             .attr("class", "bar " + exClass)
-            .attr("x", function (d) {
-                return xScale(key(d)) - col_width/2 + col_shift;
-            }).attr("width", function () {
-                return col_width;
-            }).attr("y", col_bottom).attr("height", 0);
+            .attr("y", col_bottom).attr("height", 0);
+
+    bars.attr("x", function (d) {
+        return xScale(key(d)) - col_width / 2 + col_shift;
+    }).attr("width", col_width);      
             
-    bars.transition().duration(function(d,i){return 100+i*50;})
+    var trans = bars.transition().duration(function (d, i) {
+        return 100 + i * 50;
+    })
             .attr("y", function (d) {
-                return yScale(d.values[field]);
+                return yScaleLeft(d.values[field]);
             }).attr("height", function (d) {
-        return col_bottom - yScale(d.values[field]);
+        return col_bottom - yScaleLeft(d.values[field]);
     }).style("fill-opacity", 1).style("stroke-opacity", 1);
             
-    bars.exit().transition().duration(1000)
-            .style("fill-opacity",0).style("stroke-opacity",0);
-    bars.exit().transition().delay(1000).remove();
+    
+    if(field !== curr_field_left) {
+        var color = colors.sort(function(){return 0.5 - Math.random();})[0]; 
+        trans.style("fill",color);
+    } else {
+        var color = bars.style("fill");
+        bars.style("fill",color);
+    }
+    
 }
+function draw_xAxis(mode){
+    if(mode === curr_mode) return;
+    if(xAxis !== undefined) xAxis.remove();
+    
+    var ticksCount = {Year:flyIn_year.length, Month: 12, Day: 31};
+    var domain = {
+        Year:[d3.min(flyIn_year,xValue_year),d3.max(flyIn_year,xValue_year)], 
+        Month: [1,12], 
+        Day: [1,31]};
+    var ticketFormat = {
+        Year: function(d){return d;},
+        Month: function(d){return month_names[d-1];},
+        Day: function(d){return d;}
+    };
+    
+    xScale = d3.scale.linear().range(xRange)
+            .domain([
+                domain[mode][0] - xCushion,
+                domain[mode][1] + xCushion]);
+    
+    var axis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom")
+            .ticks(ticksCount[mode]).
+            tickFormat(ticketFormat[mode]);
+    xAxis = svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + (h - pb) + ")")
+            .call(axis);
+}
+
+
+function draw_yAxisLeft(mode, field){
+    if(mode === curr_mode && field === curr_field_left) return;
+    if(yAxisLeft !== undefined) yAxisLeft.remove();
+    if(yLabelLeft !== undefined) yLabelLeft.remove();
+    
+    var data = {
+        Year: flyIn_year.concat(flyOut_year), 
+        Month: flyIn_month.concat(flyOut_month), 
+        Day: flyIn_day.concat(flyOut_day)};
+    
+    yScaleLeft = d3.scale.linear().range(yRange)
+            .domain([0,
+        yCushion * d3.max(data[mode], function (d) {return d.values[field];})]);
+
+    
+    var axis = d3.svg.axis()
+            .scale(yScaleLeft)
+            .orient("left");
+    yAxisLeft = svg.append("g")
+            .attr("class", "y axis left")
+            .attr("transform", "translate("+pl+",0)")
+            .call(axis);
+    
+    var label = flight_labels[field][0];
+    var xAnchor = flight_labels[field][1];
+    yLabelLeft = draw_label(label, xAnchor, yCenter, -90, 'y left');
+}
+
+function draw_yAxisRight(mode, field) {}
 
 function draw_label(text, xAnchor, yAnchor, rotation, exClass) {
     var ele = svg.append('text').text(text)
