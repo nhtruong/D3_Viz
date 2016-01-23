@@ -21,5 +21,16 @@ svg{
 
 .bar{
     fill: white;
-    stroke: black;
+    stroke: lightgray;
+}
+
+.bar.selector{
+    fill: black;
+    stroke: white;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.bar.selector.hover{
+    opacity: 1;
 }

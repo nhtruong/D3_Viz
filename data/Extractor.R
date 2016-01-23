@@ -12,7 +12,6 @@ selected_Columns =
   paste("Origin, Dest, Year, Month, DayofMonth, DayOfWeek",
         "Cancelled/1 as Cancelled, Diverted/1 as Diverted",
         "DepDelay/1 > 15 as DepDelay, ArrDelay/1 > 15 as ArrDelay",
-        "TaxiOut/1 as TaxiOut, TaxiIn/1 as TaxiIn", 
         sep = ", ")
 
 read_SQL = paste("select",selected_Columns,"from file",
@@ -30,18 +29,18 @@ extract_file <- function (filepath) {
   
   fly_in <<- dat %>% filter(Dest==airport_code) %>% 
     select(Year, Month, Day=DayofMonth, DayOfWeek, Cancelled, Diverted,
-           ArrDelay, TaxiIn) %>% 
+           ArrDelay) %>% 
     group_by(Year,Month,Day,DayOfWeek) %>% 
     summarise(Flights=n(), Cancelled=sum(Cancelled), Diverted=sum(Diverted),
-              Delayed=sum(ArrDelay),Taxi=sum(TaxiIn)) %>% 
+              Delayed=sum(ArrDelay)) %>% 
     bind_rows(fly_in)
   
   fly_out <<- dat %>% filter(Origin==airport_code) %>% 
     select(Year, Month, Day=DayofMonth, DayOfWeek, Cancelled, Diverted,
-           DepDelay, TaxiOut) %>% 
+           DepDelay) %>% 
     group_by(Year,Month,Day,DayOfWeek) %>% 
     summarise(Flights=n(), Cancelled=sum(Cancelled), Diverted=sum(Diverted),
-              Delayed=sum(DepDelay),Taxi=sum(TaxiOut)) %>%
+              Delayed=sum(DepDelay)) %>%
     bind_rows(fly_out)
 }
 
@@ -87,16 +86,16 @@ weather <- weather %>%
          Month=extract_time(DATE,"month"),
          Day=extract_time(DATE,"day")) %>% select(-DATE)
 
-weather[,7:19] <- lapply(weather[,7:19], function(x) as.integer(x > 0))
-weather[,1:6] <- lapply(weather[,1:6],function(x) sapply(x,standarized_unit))
+weather[,6:21] <- lapply(weather[,6:21], function(x) as.integer(x > 0))
+weather[,1:5] <- lapply(weather[,1:5],function(x) sapply(x,standarized_unit))
 
 weather <- weather %>% 
   mutate(Fog=as.integer(WT01|WT02|WT21),
          Mist=as.integer(WT08|WT13),
          Rain=as.integer(WT14|WT16),
-         Hail=as.integer(WT04|WT05),
+         Hail=as.integer(WT04|WT05|WT06),
          Thunder=WT03,
          Tornado=as.integer(WT10|WT11)) %>%
-  select(-(WT14:WT10)) %>% select(Year:Tornado,PRCP:WSF5)
+  select(-(WT14:WV03)) %>% select(Year:Tornado,PRCP:AWND)
 
 output_processed_data(weather,"fly_weather.csv")
