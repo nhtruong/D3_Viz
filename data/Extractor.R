@@ -1,7 +1,7 @@
 library(dplyr)
 library(sqldf)
 
-original_folder <-  "C:/Users/Theodore/Dropbox/Udacity/Data_Visualization"
+original_folder <-  "E:/Downloads"
 original_files <- list.files(original_folder, pattern ="^[[:digit:]]{4}.csv$")
 original_files <- paste(original_folder, original_files, sep="/")
 
@@ -61,7 +61,7 @@ output_processed_data(fly_out)
 ################################################################################
 ################################################################################
 
-weather_file <- "C:/Users/Theodore/Dropbox/Udacity/Data_Visualization/weather.csv"
+weather_file <- "E:/Downloads/weather.csv"
 
 extract_time <- function(dt, tpy) {
   dt <- as.character(dt)

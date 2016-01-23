@@ -71,14 +71,12 @@ function aggregate_flights(d){
     r.Total_Cancelled = d3.sum(d, function(g){return g.Cancelled;});
     r.Total_Diverted = d3.sum(d, function(g){return g.Diverted;});
     r.Total_Delayed = d3.sum(d, function(g){return g.Delayed;});
-    r.Total_Taxi = d3.sum(d, function(g){return g.Taxi;})/100;
-    r.Total_DelCan = r.Total_Cancelled + r.Total_Delayed;
+    r.Total_DivCan = r.Total_Cancelled + r.Total_Diverted;
     
     r.Perc_Cancelled = r.Total_Cancelled / r.Flights * 100;
     r.Perc_Diverted = r.Total_Diverted / r.Flights * 100;
     r.Perc_Delayed = r.Total_Delayed / r.Flights * 100;
-    r.Perc_DelCan = r.Total_DelCan / r.Flights * 100;
-    r.Avrg_Taxi = r.Total_Taxi / r.Flights * 100;
+    r.Perc_DivCan = r.Total_DivCan / r.Flights * 100;
     
     return r;
 }
@@ -92,13 +90,10 @@ function aggregate_weather(d){
     r.Days_Thunder = d3.sum(d, function(g){return g.Thunder;});
     r.Days_Tornado = d3.sum(d, function(g){return g.Tornado;});
     
-    r.Avrg_Precipication = d3.mean(d, function(g){return g.PRCP;});
+    r.Avrg_Precipitation = d3.mean(d, function(g){return g.PRCP;});
     r.Avrg_MaxTemperature = d3.mean(d, function(g){return g.TMAX;});
     r.Avrg_MinTemperature = d3.mean(d, function(g){return g.TMIN;});
-    r.Avrg_MinTemperature = d3.mean(d, function(g){return g.TMIN;});
     r.Avrg_WindSpeed = d3.mean(d, function(g){return g.AWND;});
-    r.Avrg_Top2MinsWindSpeed = d3.mean(d, function(g){return g.WSF2;});
-    r.Avrg_Top5SecsWindSpeed = d3.mean(d, function(g){return g.WSF2;});
     
     return r;
 }
@@ -108,14 +103,26 @@ var flight_labels = {
     Total_Cancelled:["Flights Cancelled",30],
     Total_Diverted: ["Flights Diverted",30],
     Total_Delayed: ["Flights Delayed",30],
-    Total_DelCan: ["Flights Delayed or Cancelled",30],
-    Total_Taxi: ["Total Taxi Time (In Hundred Minutes)",30],
+    Total_DivCan: ["Flights Diverted or Cancelled",30],
     
     Perc_Cancelled: ["Percent of Cancelled Flights",30],
     Perc_Diverted: ["Percent of Diverted Flights",30],
     Perc_Delayed: ["Percent of Delayed Flights",30],
-    Perc_DelCan: ["Percent of Delayed and Cancelled Flights",30],
-    Avrg_Taxi: ["Average Taxi Time (In Minutes)",30]
+    Perc_DivCan: ["Percent of Diverted and Cancelled Flights",30]
+};
+
+var weather_labels = {
+    Days_Fog: ["Days with Fog or Smoke",20],
+    Days_Mist:["Days with Mist or Haze",30],
+    Days_Rain: ["Days with Rain",30],
+    Days_Hail: ["Days with Hail or Sleet",30],
+    Days_Thunder: ["Days with Thunder",30],
+    Days_Tornado: ["Days with Tornado, or Damaging Wind",30],
+    
+    Avrg_Precipitation: ["Average Precipitation (in Millimeters)",20],
+    Avrg_MaxTemperature:["Average Max Temperature (in Celcius)",30],
+    Avrg_MinTemperature: ["Average Min Temperature (in Celcius)",30],
+    Avrg_WindSpeed: ["Average Windspeed (in Meters per Second)",30]
 };
 var month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -143,7 +150,7 @@ var header = $('<div>').prependTo($('body')).addClass("header");
 var footer = $('<div>').appendTo($('body')).addClass("footer");
 
 var flySelector = $('<select>').appendTo(footer).change(function(){
-    draw_flight($(this).val(),"2006","3");
+    draw_flight($(this).val(),curr_year,curr_month);
 });
 for(var val in flight_labels)
     $('<option>').val(val).text(flight_labels[val][0]).appendTo(flySelector);
@@ -151,7 +158,7 @@ for(var val in flight_labels)
 var yearSelector = $('<select>').appendTo(footer).change(function(){
     draw_flight(curr_field_left,$(this).val(),curr_month);
 });
-for(var year = 2002; year <= 2008; year++)
+for(var year = 1988; year <= 2008; year++)
     $('<option>').val(year).text(year).appendTo(yearSelector);
 
 var monthSelector = $('<select>').appendTo(footer).change(function(){
@@ -171,7 +178,7 @@ var xValue_day = function(d){return +d.key.split(",")[2];};
 
 
 function init() {
-    draw_flight("Perc_DelCan","2002");
+    draw_flight("Total_DivCan");
     
 }
 
@@ -216,8 +223,8 @@ function draw_flight(field,year,month) {
     draw_xAxis(mode);
     draw_yAxisLeft(mode,field);
      
-    draw_bars(data_flyIn, key, field, +colShift_ratio, "flyIn", colorSet_1);
-    draw_bars(data_flyOut, key, field, -colShift_ratio, "flyOut", colorSet_2);
+    draw_bars(data_flyIn, key, field, +colShift_ratio, "flyIn",1);
+    draw_bars(data_flyOut, key, field, -colShift_ratio, "flyOut",0);
     
     curr_mode = mode;
     curr_field_left = field;
@@ -226,16 +233,17 @@ function draw_flight(field,year,month) {
 
 }
 
-function draw_bars(data,key, field, shift_ratio, exClass, colors) {
+function draw_bars(data,key, field, shift_ratio, exClass, direction) {
     var col_width = (xScale(2) - xScale(1)) * colWidth_ratio;
     var col_bottom = yScaleLeft(0);
     var col_shift = col_width * shift_ratio;
+    var colorSets = [colorSet_1, colorSet_2];
     
     var bars = svg.selectAll('rect.bar.' + exClass)
             .data(data,key);
     
     bars.exit().transition().duration(500)
-            .attr("y", col_bottom).attr("height", 0)
+            //.attr("y", col_bottom).attr("height", 0)
             .style("fill-opacity",0).style("stroke-opacity",0).remove();
     
         
@@ -258,10 +266,13 @@ function draw_bars(data,key, field, shift_ratio, exClass, colors) {
             
     
     if(field !== curr_field_left) {
-        var color = colors.sort(function(){return 0.5 - Math.random();})[0]; 
+        var color = get_rand_ele(colorSets[direction]);
         trans.style("fill",color);
+        if(direction) colorIn = color;
+        else colorOut = color;
     } else {
-        var color = bars.style("fill");
+        var color = direction ? colorIn : colorOut;
+        
         bars.style("fill",color);
     }
     
@@ -338,6 +349,10 @@ function draw_label(text, xAnchor, yAnchor, rotation, exClass) {
                     "rotate(" + rotation + "," + xAnchor + "," + yAnchor + ")");
     return ele;
 } 
+
+function get_rand_ele(arr) {
+    return arr.sort(function(){return 0.5 - Math.random();})[0];
+}
 
 
 
