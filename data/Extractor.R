@@ -1,6 +1,13 @@
 library(dplyr)
 library(sqldf)
 
+output_processed_data <- function(dat, filename){
+  if(missing(filename))
+    filename = paste(substitute(dat),"csv",sep=".")
+  filepath = paste(original_folder, filename, sep="/")
+  write.csv(dat, filepath, row.names = FALSE)
+}
+
 original_folder <-  "E:/Downloads"
 original_files <- list.files(original_folder, pattern ="^[[:digit:]]{4}.csv$")
 original_files <- paste(original_folder, original_files, sep="/")
@@ -31,30 +38,20 @@ extract_file <- function (filepath) {
     select(Year, Month, Day=DayofMonth, DayOfWeek, Cancelled, Diverted,
            ArrDelay) %>% 
     group_by(Year,Month,Day,DayOfWeek) %>% 
-    summarise(Flights=n(), Cancelled=sum(Cancelled), Diverted=sum(Diverted),
-              Delayed=sum(ArrDelay)) %>% 
+    summarise(in_Flights=n(), in_Cancelled=sum(Cancelled), 
+              in_Diverted=sum(Diverted),in_Delayed=sum(ArrDelay)) %>% 
     bind_rows(fly_in)
   
   fly_out <<- dat %>% filter(Origin==airport_code) %>% 
     select(Year, Month, Day=DayofMonth, DayOfWeek, Cancelled, Diverted,
            DepDelay) %>% 
     group_by(Year,Month,Day,DayOfWeek) %>% 
-    summarise(Flights=n(), Cancelled=sum(Cancelled), Diverted=sum(Diverted),
-              Delayed=sum(DepDelay)) %>%
+    summarise(out_Flights=n(), out_Cancelled=sum(Cancelled), 
+              out_Diverted=sum(Diverted), out_Delayed=sum(DepDelay)) %>%
     bind_rows(fly_out)
 }
 
 lapply(original_files, extract_file)
-
-output_processed_data <- function(dat, filename){
-  if(missing(filename))
-    filename = paste(substitute(dat),"csv",sep=".")
-  filepath = paste(original_folder, filename, sep="/")
-  write.csv(dat, filepath, row.names = FALSE)
-}
-
-output_processed_data(fly_in)
-output_processed_data(fly_out)
 
 
 ################################################################################
@@ -98,4 +95,11 @@ weather <- weather %>%
          Tornado=as.integer(WT10|WT11)) %>%
   select(-(WT14:WV03)) %>% select(Year:Tornado,PRCP:AWND)
 
-output_processed_data(weather,"fly_weather.csv")
+################################################################################
+################################################################################
+
+
+all_data <- left_join(fly_out,fly_in,by=c("Year","Month","Day","DayOfWeek")) %>%
+  left_join(weather, by=c("Year","Month","Day"))
+
+output_processed_data(all_data,"MSY.csv")

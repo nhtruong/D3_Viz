@@ -243,7 +243,6 @@ function draw_bars(data,key, field, shift_ratio, exClass, direction) {
             .data(data,key);
     
     bars.exit().transition().duration(500)
-            //.attr("y", col_bottom).attr("height", 0)
             .style("fill-opacity",0).style("stroke-opacity",0).remove();
     
         
