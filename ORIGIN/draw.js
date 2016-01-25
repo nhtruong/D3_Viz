@@ -21,17 +21,27 @@ var svg = d3.select("body").append("svg").style("width", w).style("height", h);
 var header = $('<div>').prependTo($('body')).addClass("header");
 var footer = $('<div>').appendTo($('body')).addClass("footer");
 
-var curr_weather = "Avrg_Precipitation";
-var curr_flight = "Perc_DivCan";
+var flySelector = $('<select>').appendTo(footer).change(function(){
+    draw({flight:$(this).val(), year: curr_year, month: curr_month});
+});
+for(var val in flight_features)
+    $('<option>').val(val).text(flight_features[val][0]).appendTo(flySelector);
+
+var curr_flight = "Flights";
+var curr_weather = "Days_Fog";
 var curr_mode, curr_year, curr_month;
 
 function init() {
-    draw();
+    draw({});
 }
 
 var xAxis, yAxisL, yAxisR;
 var xScale, yScaleL, yScaleR;
-function draw(year, month,flight,weather){
+function draw(params){
+    var year = params.year;
+    var month = params.month;
+    var flight = params.flight;
+    var weather = params.weather;
     var mode;
     if(year === undefined){mode = "year";} 
     else if (month === undefined){mode = "month";} 
@@ -100,12 +110,14 @@ function draw_xAxis(mode, data) {
             .orient("bottom")
             .ticks(tickCount[mode]).
             tickFormat(tickFormat[mode]);
-    
-    xAxis = svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + (h - pb) + ")")
-            .call(axis);
-    fadeIn(xAxis,750,250);
+    setTimeout(function(){
+        xAxis = svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + (h - pb) + ")")
+                .call(axis);
+        fadeIn(xAxis, 750, 250);
+    },25);
+
 }
 function draw_yAxisL(data, feature){
     fadeOut(yAxisL, 1000, 0, true);
@@ -188,7 +200,7 @@ function draw_data(mode,data, flight, weather) {
             .on("mouseover",function(){
                 d3.select(this).select('.bg_bar')
                 .transition().ease("linear").duration(75)
-                .style("opacity",0.4);
+                .style("opacity",0.25);
             }).on("mouseout",function(){
                 d3.select(this).select('.bg_bar')
                 .transition().duration(150)
@@ -196,12 +208,13 @@ function draw_data(mode,data, flight, weather) {
             }).on("click",function(d){
                 var val = key(d)+'';
                 if(mode === "year")
-                    draw(val);
+                    draw({year:val});
                 else if (mode === "month")
-                    draw(curr_year, val);
-                d3.selectAll('.bg_bar').transition().duration(250)
-                        .style("opacity",0)
-                        .remove();
+                    draw({year:curr_year, month: val});
+                if(mode !== "day")
+                    d3.selectAll('.bg_bar').transition().duration(250)
+                            .style("opacity",0)
+                            .remove();
             });
     
         
@@ -216,7 +229,7 @@ function draw_data(mode,data, flight, weather) {
     var barS = barW / 2 * colShift_ratio;
     var barX = (colW-barW) / 2;
     
-    function draw_flight(feature, shift, idClass) {
+    function draw_flight(feature, shift, idClass, color) {
         new_entries.append('rect')
                 .attr("class", idClass)
                 .attr("y", bottom).attr("height", 0)
@@ -226,14 +239,15 @@ function draw_data(mode,data, flight, weather) {
                 .transition()
                 .delay(function(d,i){return i*delay_scale;})
                 .duration(750)
+                .style("fill",color)
                 .attr("y", function (d) {return yScaleL(d.values[feature]);})
                 .attr("height",function (d) {
                     return bottom - yScaleL(d.values[feature]);
                 });
     }
     
-    draw_flight("in_" + flight, barS, "in_bar");
-    draw_flight("out_" + flight, -barS, "out_bar");
+    draw_flight("in_" + flight, barS, "in_bar", flight_features[flight][3]);
+    draw_flight("out_" + flight, -barS, "out_bar", flight_features[flight][2]);
     
     
 

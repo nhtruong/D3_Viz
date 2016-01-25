@@ -105,7 +105,6 @@ var flight_features = {
     Perc_Delayed: ["Percent of Delayed Flights",30],
     Perc_DivCan: ["Percent of Diverted and Cancelled Flights",30]
 };
-
 var weather_features = {
     Days_Fog: ["Days with Fog or Smoke",20],
     Days_Mist:["Days with Mist or Haze",30],
@@ -119,15 +118,27 @@ var weather_features = {
     Avrg_MinTemperature: ["Average Min Temperature (in Celcius)",30],
     Avrg_WindSpeed: ["Average Windspeed (in Meters per Second)",30]
 };
-var month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
 var colorSets = [
-    ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c',
-    '#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99'],
-    ['#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462',
-    '#b3de69','#fccde5','#d9d9d9','#bc80bd','#ccebc5']
+    ['#fbb4ae','#b3cde3','#ccebc5','#decbe4','#fed9a6'
+        ,'#78c679','#e5d8bd','#fddaec','#f2f2f2'],
+    ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00'
+        ,'#006837','#a65628','#f781bf','#999999'],
+    ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99'
+        ,'#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a']
     ];
     
+
+for(var key in flight_features){
+    flight_features[key].push(colorSets[0].pop());
+    flight_features[key].push(colorSets[1].pop());
+}
+
+for(var key in weather_features){
+    weather_features[key].push(colorSets[2].pop());
+}
+
+
+var month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];  
     
  function log(msg){console.log(msg);}
