@@ -1,0 +1,55 @@
+svg{
+    margin:15px auto;
+    display: block;
+}
+.footer, .header{
+    margin:10px auto;
+    width: 980px;
+}
+
+.main_title{
+    text-align:center;
+    width:100%;
+    font-weight: bold;
+    font-size: 20px;
+}
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+}
+
+
+.bg_bar{
+    fill:black;
+    stroke: black;
+    opacity: 0;
+    stroke-width:0px;
+}
+
+svg.entry{
+    cursor: pointer;
+}
+.in_bar, .out_bar{
+    fill: white;
+    stroke: gray;
+}
+
+.wea_dot{
+    fill:white;
+    stroke:white;
+    stroke-width:2px;
+}
+
+.label{
+    font-weight:bold;
+}
+.label.x{
+    font-size: 1.2em;
+}
