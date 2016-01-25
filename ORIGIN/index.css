@@ -19,18 +19,21 @@ svg{
     font-size: 11px;
 }
 
-.bar{
-    fill: white;
-    stroke: lightgray;
-}
 
-.bar.selector{
-    fill: black;
-    stroke: white;
-    cursor: pointer;
+.bg_bar{
+    fill:#6a51a3;
+    stroke: #fed976;
     opacity: 0;
+    stroke-width:2px;
 }
 
-.bar.selector.hover{
-    opacity: 1;
+svg.entry{
+    cursor: pointer;
+}
+.in_bar{
+    fill: #FFC918;
+}
+
+.out_bar{
+    fill: #48AEFF;
 }

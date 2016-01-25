@@ -3,7 +3,7 @@
 
 /* ------------------- LOAD THE DATA ---------------------------------------- */
 
-var data = {};
+var all_data = {};
 var dataSource = "../data/MSY.csv";
 
 d3.csv(dataSource, function (d) {
@@ -20,9 +20,9 @@ function process_data() {
     var agg_day = d3.nest().rollup(function (d){return aggregate(d);})
             .key(function (d) {return [d.Year,d.Month,d.Day];});
     
-    data["year"] = agg_year.entries(dataSource);
-    data["month"] = agg_month.entries(dataSource);
-    data["day"] = agg_day.entries(dataSource);
+    all_data["year"] = agg_year.entries(dataSource);
+    all_data["month"] = agg_month.entries(dataSource);
+    all_data["day"] = agg_day.entries(dataSource);
 }
 
 function aggregate(d){
@@ -67,8 +67,34 @@ function aggregate(d){
     return r;
 }
 
-var flight_labels = {
-    Flights: ["Number of Flights",20],
+function get_default(val, def){
+    if(val === null || val === undefined)
+        return def;
+    return val;
+}
+
+function get_data(mode,year,month){
+    var data = all_data[mode];
+    if(mode === "year")
+        return data;
+    if(mode === "month")
+        return data.filter(function(d){return d.key.split(",")[0]===year;});
+    if(mode === "day")
+        return data.filter(function(d){
+            var YMD = d.key.split(",");
+            return YMD[0] === year && YMD[1] === month;
+        });
+    return ["nada"];
+}
+
+var xValue_funs = {
+    year: function(d){return +d.key;},
+    month:function(d){return +d.key.split(",")[1];},
+    day: function(d){return +d.key.split(",")[2];}
+};
+
+var flight_features = {
+    Flights: ["Number of Flights",15],
     Total_Cancelled:["Flights Cancelled",30],
     Total_Diverted: ["Flights Diverted",30],
     Total_Delayed: ["Flights Delayed",30],
@@ -80,7 +106,7 @@ var flight_labels = {
     Perc_DivCan: ["Percent of Diverted and Cancelled Flights",30]
 };
 
-var weather_labels = {
+var weather_features = {
     Days_Fog: ["Days with Fog or Smoke",20],
     Days_Mist:["Days with Mist or Haze",30],
     Days_Rain: ["Days with Rain",30],
@@ -96,7 +122,12 @@ var weather_labels = {
 var month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-var colorSet_1 = ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c',
-    '#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99'];
-var colorSet_2 = ['#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462',
-    '#b3de69','#fccde5','#d9d9d9','#bc80bd','#ccebc5'];
+var colorSets = [
+    ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c',
+    '#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99'],
+    ['#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462',
+    '#b3de69','#fccde5','#d9d9d9','#bc80bd','#ccebc5']
+    ];
+    
+    
+ function log(msg){console.log(msg);}
