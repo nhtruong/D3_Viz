@@ -7,6 +7,13 @@ svg{
     margin:10px auto;
     width: 980px;
 }
+
+.main_title{
+    text-align:center;
+    width:100%;
+    font-weight: bold;
+    font-size: 20px;
+}
 .axis path,
 .axis line {
     fill: none;
@@ -33,4 +40,15 @@ svg.entry{
 .in_bar, .out_bar{
     fill: white;
     stroke: gray;
+}
+
+.wea_dot{
+    fill:white;
+    stroke:white;
+    stroke-width:2px;
+}
+
+.label.x{
+    font-weight: bold;
+    font-size: 1.1em;
 }

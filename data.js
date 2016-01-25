@@ -4,7 +4,7 @@
 /* ------------------- LOAD THE DATA ---------------------------------------- */
 
 var all_data = {};
-var dataSource = "../data/MSY.csv";
+var dataSource = "data/MSY.csv";
 
 d3.csv(dataSource, function (d) {
     dataSource = d;
@@ -52,12 +52,12 @@ function aggregate(d){
     r.in_Perc_DivCan = r.in_Total_DivCan / r.in_Flights * 100;
     
     
-    r.Days_Fog = d3.sum(d, function(g){return g.Fog;});
-    r.Days_Mist = d3.sum(d, function(g){return g.Mist;});
-    r.Days_Rain = d3.sum(d, function(g){return g.Rain;});
-    r.Days_Hail = d3.sum(d, function(g){return g.Hail;});
-    r.Days_Thunder = d3.sum(d, function(g){return g.Thunder;});
-    r.Days_Tornado = d3.sum(d, function(g){return g.Tornado;});
+//    r.Days_Fog = d3.sum(d, function(g){return g.Fog;});
+//    r.Days_Mist = d3.sum(d, function(g){return g.Mist;});
+//    r.Days_Rain = d3.sum(d, function(g){return g.Rain;});
+//    r.Days_Hail = d3.sum(d, function(g){return g.Hail;});
+//    r.Days_Thunder = d3.sum(d, function(g){return g.Thunder;});
+//    r.Days_Tornado = d3.sum(d, function(g){return g.Tornado;});
     
     r.Avrg_Precipitation = d3.mean(d, function(g){return g.PRCP;});
     r.Avrg_MaxTemperature = d3.mean(d, function(g){return g.TMAX;});
@@ -106,25 +106,24 @@ var flight_features = {
     Perc_DivCan: ["Percent of Diverted and Cancelled Flights",30]
 };
 var weather_features = {
-    Days_Fog: ["Days with Fog or Smoke",20],
-    Days_Mist:["Days with Mist or Haze",30],
-    Days_Rain: ["Days with Rain",30],
-    Days_Hail: ["Days with Hail or Sleet",30],
-    Days_Thunder: ["Days with Thunder",30],
-    Days_Tornado: ["Days with Tornado, or Damaging Wind",30],
-    
+//    Days_Fog: ["Days with Fog or Smoke",20],
+//    Days_Mist:["Days with Mist or Haze",30],
+//    Days_Rain: ["Days with Rain",30],
+//    Days_Hail: ["Days with Hail or Sleet",30],
+//    Days_Thunder: ["Days with Thunder",30],
+//    Days_Tornado: ["Days with Tornado, or Damaging Wind",30],
+
     Avrg_Precipitation: ["Average Precipitation (in Millimeters)",20],
-    Avrg_MaxTemperature:["Average Max Temperature (in Celcius)",30],
-    Avrg_MinTemperature: ["Average Min Temperature (in Celcius)",30],
-    Avrg_WindSpeed: ["Average Windspeed (in Meters per Second)",30]
+    Avrg_WindSpeed: ["Average Windspeed (in Meters per Second)",30],
+    Avrg_MinTemperature: ["Average Lowest Temperature (in Celcius)",30],
+    Avrg_MaxTemperature:["Average Highest Temperature (in Celcius)",30]
 };
 var colorSets = [
     ['#fbb4ae','#b3cde3','#ccebc5','#decbe4','#fed9a6'
         ,'#78c679','#e5d8bd','#fddaec','#f2f2f2'],
     ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00'
         ,'#006837','#a65628','#f781bf','#999999'],
-    ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99'
-        ,'#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a']
+    ['#e41a1c','#377eb8','#4daf4a','#984ea3']
     ];
     
 
@@ -139,6 +138,9 @@ for(var key in weather_features){
 
 
 var month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];  
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; 
+
+var month_fullnames = ["January", "February", "March", "April", "May", "June", 
+    "July", "August", "September", "October", "November", "December"];  
     
  function log(msg){console.log(msg);}

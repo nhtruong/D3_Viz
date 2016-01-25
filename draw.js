@@ -6,29 +6,44 @@
 var temp;
 
 var w = 1200, h = 640;
-var pt = 20, pr = 70, pb = 40, pl = 70;
+var pt = 20, pr = 70, pb = 50, pl = 70;
 var bottom = h-pb;
 var xRange = [pl,w-pr];
 var yRange = [h-pb,pt];
 var xCenter = (w-pr-pl)/2+pl;
 var yCenter = (h-pt-pb)/2+pt;
 var xCushion = .75;
-var yCushion = 1.1;
+var yCushion = 1.25;
 var colWidth_ratio = 0.50;
 var colShift_ratio = 0.50;
 
 var svg = d3.select("body").append("svg").style("width", w).style("height", h);
-var header = $('<div>').prependTo($('body')).addClass("header");
-var footer = $('<div>').appendTo($('body')).addClass("footer");
 
-var flySelector = $('<select>').appendTo(footer).change(function(){
-    draw({flight:$(this).val(), year: curr_year, month: curr_month});
-});
-for(var val in flight_features)
-    $('<option>').val(val).text(flight_features[val][0]).appendTo(flySelector);
+setup_UI();
+function setup_UI(){
+    var header = $('<div>').prependTo($('body')).addClass("header");
+    var footer = $('<div>').appendTo($('body')).addClass("footer");
+    
+    var title = "Louis Armstrong New Orleans International Airport<br/>"+
+            "How Much Does Weather Affect Its Operation?";
+    $('<div>').html(title).addClass("main_title").appendTo(header);
+
+    var flySelector = $('<select>').appendTo(footer).change(function () {
+        draw({flight: $(this).val(), year: curr_year, month: curr_month});
+    });
+    for (var val in flight_features)
+        $('<option>').val(val).text(flight_features[val][0]).appendTo(flySelector);
+    var weaSelector = $('<select>').appendTo(footer).change(function () {
+        draw({weather: $(this).val(), year: curr_year, month: curr_month});
+    });
+    for (var val in weather_features)
+        $('<option>').val(val).text(weather_features[val][0]).appendTo(weaSelector);
+}
+
+
 
 var curr_flight = "Flights";
-var curr_weather = "Days_Fog";
+var curr_weather = "Avrg_Precipitation";
 var curr_mode, curr_year, curr_month;
 
 function init() {
@@ -38,19 +53,19 @@ function init() {
 var xAxis, yAxisL, yAxisR;
 var xScale, yScaleL, yScaleR;
 function draw(params){
-    var year = params.year;
-    var month = params.month;
+    var year = params.year + '';
+    var month = params.month + '';
     var flight = params.flight;
     var weather = params.weather;
     var mode;
-    if(year === undefined){mode = "year";} 
-    else if (month === undefined){mode = "month";} 
+    
+    if(year === 'undefined'){mode = "year";} 
+    else if (month === 'undefined'){mode = "month";} 
     else {mode = "day";}
     
     var data = get_data(mode, year, month);
-    
     if(mode !== curr_mode)
-        draw_xAxis(mode,data);
+        draw_xAxis(mode,data, year, month);
     
     if(mode !== curr_mode || flight !== curr_flight) {
         flight = get_default(flight, curr_flight);
@@ -86,7 +101,7 @@ function fadeIn(element, duration, delay, hide){
             .style("opacity",1).attr("opacity",1);
 }
 
-function draw_xAxis(mode, data) {
+function draw_xAxis(mode, data, year, month) {
     fadeOut(xAxis, 750, 0, true);
    
     var tickCount = {year:data.length, month: 12, day: 31};
@@ -111,11 +126,20 @@ function draw_xAxis(mode, data) {
             .ticks(tickCount[mode]).
             tickFormat(tickFormat[mode]);
     setTimeout(function(){
-        xAxis = svg.append("g")
+        xAxis = svg.append("g");
+        xAxis.append("g")
                 .attr("class", "x axis")
                 .attr("transform", "translate(0," + (h - pb) + ")")
                 .call(axis);
         fadeIn(xAxis, 750, 250);
+        
+        if(mode === "year") return;
+        var text = '';
+        if(mode === "day")
+            text = month_fullnames[month-1];
+        text += " " + year;
+        
+        draw_label(xAxis, text, 0, xCenter, h-5, 'x');
     },25);
 
 }
@@ -189,7 +213,6 @@ function draw_data(mode,data, flight, weather) {
     var delay_scale = 1000 / count;
     
     var entries = svg.selectAll('svg.entry').data(data,key);
-
     entries.exit().transition().duration(750).ease('linear')
             .style("fill-opacity",0).style("stroke-opacity",0)
             .remove();
@@ -249,7 +272,19 @@ function draw_data(mode,data, flight, weather) {
     draw_flight("in_" + flight, barS, "in_bar", flight_features[flight][3]);
     draw_flight("out_" + flight, -barS, "out_bar", flight_features[flight][2]);
     
+    var radius = colW/5;
+    var dotS = colW/2;
     
-
-
+    new_entries.append('circle')
+            .attr("class","wea_dot")
+            .attr("cx",dotS)
+            .attr("cy",0)
+            .attr("r", radius);
+    
+    svg.selectAll('circle.wea_dot').data(data,key)
+                .transition()
+                .delay(function(d,i){return (data.length-i)*delay_scale;})
+                .duration(750)
+                .style("fill",weather_features[weather][2])
+            .attr("cy", function (d) {return yScaleR(d.values[weather]);});
 }
