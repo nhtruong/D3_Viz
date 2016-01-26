@@ -5,7 +5,7 @@
 
 var temp;
 
-var w = 1200, h = 640;
+var w = 1000, h = 520;
 var pt = 110, pr = 70, pb = 50, pl = 70;
 var bottom = h-pb;
 var xRange = [pl,w-pr];
@@ -17,27 +17,41 @@ var yCushion = 1.06;
 var colWidth_ratio = 0.50;
 var colShift_ratio = 0.50;
 
-var svg = d3.select("body").append("svg").style("width", w).style("height", h);
+var svg = d3.select("#chart").append("svg").classed("master",true)
+        .style("width", w).style("height", h);
 
 setup_UI();
 function setup_UI(){
-    var header = $('<div>').prependTo($('body')).addClass("header");
-    var footer = $('<div>').appendTo($('body')).addClass("footer");
+    var header = $('div.header');
     
     var title = "Louis Armstrong New Orleans International Airport<br/>"+
-            "How Much Does Weather Affect Its Operation?";
+            "How Katrina Affected the Airport's Operation";
     $('<div>').html(title).addClass("main_title").appendTo(header);
-
-    var flySelector = $('<select>').appendTo(footer).change(function () {
-        draw({flight: $(this).val(), year: curr_year, month: curr_month});
-    });
-    for (var val in flight_features)
-        $('<option>').val(val).text(flight_features[val][0]).appendTo(flySelector);
-    var weaSelector = $('<select>').appendTo(footer).change(function () {
-        draw({weather: $(this).val(), year: curr_year, month: curr_month});
-    });
-    for (var val in weather_features)
-        $('<option>').val(val).text(weather_features[val][0]).appendTo(weaSelector);
+ 
+    
+    var chart = $('#chart');
+    
+    var get_label = function(feature, collection){
+        var label = collection[feature][0]
+                .replace("Average","Avrg.")
+                .replace("Percent","Pcnt.");
+        return label.split("(")[0].trim();
+    };
+    
+    for (var feature in flight_features)
+        $("<button>").text(get_label(feature, flight_features))
+                .val(feature)
+                .click(function () {
+                    draw({flight: $(this).val(),
+                        year: curr_year, month: curr_month});
+                }).appendTo($('#left_panel'));
+    for (var feature in weather_features)
+        $("<button>").text(get_label(feature, weather_features))
+                .val(feature)
+                .click(function () {
+                    draw({weather: $(this).val(),
+                        year: curr_year, month: curr_month});
+                }).appendTo($('#right_panel'));
 }
 
 
@@ -199,7 +213,7 @@ function draw_data(mode,data, flight, weather) {
     var key = xValue_funs[mode];
     var xShift = function(d){return xScale(key(d)) - colW/2;};
     var count = data.length;
-    var delay_scale = 500 / count;
+    var delay_scale = 300 / count;
     
 
     
@@ -302,7 +316,7 @@ function draw_label(target, text,rotation, xAnchor, yAnchor, exClass, color) {
 function draw_legend(flight,weather) {
     fadeOut(legend, 1000, 0, true);
     
-    var midpoint = 100;
+    var midpoint = 50;
     var lineHeight = 30;
     var barH = lineHeight/1.6;
     var barW = 30;
@@ -326,9 +340,9 @@ function draw_legend(flight,weather) {
             .attr("x",barX+barW+10).attr("y",lineHeight/2+barH+10);
     
     
-    midpoint = 800;
+    midpoint = 400;
     var circleR = barH/2+2;
-    var circleX = midpoint -circleR - 10;
+    var circleX = midpoint - circleR - 5;
     var circleY = circleR;
     
     legend.append('text').text("Weather Feature")
@@ -342,11 +356,13 @@ function draw_legend(flight,weather) {
     fadeIn(legend, 750, 0, true);
 }
 function draw_buttons(mode,year,month) {
-    fadeOut(buttons, 500, 0, true);
+    fadeOut(buttons, 1000, 250, true);
     if(mode === 'year') return;
     var rx = 30, ry = 25;
-    var cx = pl/2 + rx;
-    var cy = 30 + ry;
+    var rxl = 40;
+    var pad = 10;
+    var cx = w-rx-pr-10;
+    var cy = 40 + ry;
     buttons = svg.append('g');
     
     if(mode === 'month'){
@@ -369,15 +385,19 @@ function draw_buttons(mode,year,month) {
         next = month_names[next-1];
     }
     
-    if(prev !== null && prev_ !== null)
-        make_button("PREV",prev, prev_click);
     
-    cx = w-rx-pr/2;
     if(next !== null && next_ !== null)
-        make_button("NEXT",next, next_click);
+        make_button("Next",next, next_click);
     
-    cx = xCenter;
-    rx = 40;
+    cx = cx - (2*rx + 2*pad + 2*rxl);
+    if(prev !== null && prev_ !== null)
+        make_button("Prev",prev, prev_click);
+    
+
+    
+
+    cx = cx + 2*rxl;    
+    rx = rxl;
     if(return_click !== undefined)
     make_button("RETURN","RETURN", return_click);
     

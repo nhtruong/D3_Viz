@@ -29,27 +29,29 @@ function aggregate(d){
     var r = {};
     
     r.out_Flights = d3.sum(d, function(g){return g.out_Flights;});
+    
     r.out_Total_Cancelled = d3.sum(d, function(g){return g.out_Cancelled;});
     r.out_Total_Diverted = d3.sum(d, function(g){return g.out_Diverted;});
     r.out_Total_Delayed = d3.sum(d, function(g){return g.out_Delayed;});
-    r.out_Total_DivCan = r.out_Total_Cancelled + r.out_Total_Diverted;
+//    r.out_Total_DivCan = r.out_Total_Cancelled + r.out_Total_Diverted;
     
     r.out_Perc_Cancelled = r.out_Total_Cancelled / r.out_Flights * 100;
     r.out_Perc_Diverted = r.out_Total_Diverted / r.out_Flights * 100;
     r.out_Perc_Delayed = r.out_Total_Delayed / r.out_Flights * 100;
-    r.out_Perc_DivCan = r.out_Total_DivCan / r.out_Flights * 100;
+//    r.out_Perc_DivCan = r.out_Total_DivCan / r.out_Flights * 100;
     
     
     r.in_Flights = d3.sum(d, function(g){return g.in_Flights;});
+    
     r.in_Total_Cancelled = d3.sum(d, function(g){return g.in_Cancelled;});
     r.in_Total_Diverted = d3.sum(d, function(g){return g.in_Diverted;});
     r.in_Total_Delayed = d3.sum(d, function(g){return g.in_Delayed;});
-    r.in_Total_DivCan = r.in_Total_Cancelled + r.in_Total_Diverted;
+//    r.in_Total_DivCan = r.in_Total_Cancelled + r.in_Total_Diverted;
     
     r.in_Perc_Cancelled = r.in_Total_Cancelled / r.in_Flights * 100;
     r.in_Perc_Diverted = r.in_Total_Diverted / r.in_Flights * 100;
     r.in_Perc_Delayed = r.in_Total_Delayed / r.in_Flights * 100;
-    r.in_Perc_DivCan = r.in_Total_DivCan / r.in_Flights * 100;
+//    r.in_Perc_DivCan = r.in_Total_DivCan / r.in_Flights * 100;
     
     
 //    r.Days_Fog = d3.sum(d, function(g){return g.Fog;});
@@ -98,12 +100,12 @@ var flight_features = {
     Total_Cancelled:["Flights Cancelled",20],
     Total_Diverted: ["Flights Diverted",25],
     Total_Delayed: ["Flights Delayed",20],
-    Total_DivCan: ["Flights Diverted or Cancelled",20],
+//    Total_DivCan: ["Flights Diverted or Cancelled",20],
     
     Perc_Cancelled: ["Percent of Cancelled Flights",30],
     Perc_Diverted: ["Percent of Diverted Flights",30],
-    Perc_Delayed: ["Percent of Delayed Flights",30],
-    Perc_DivCan: ["Percent of Diverted and Cancelled Flights",30]
+    Perc_Delayed: ["Percent of Delayed Flights",30]
+//    Perc_DivCan: ["Percent of Diverted and Cancelled Flights",30]
 };
 var weather_features = {
 //    Days_Fog: ["Days with Fog or Smoke",20],
@@ -115,15 +117,15 @@ var weather_features = {
 
     Avrg_Precipitation: ["Average Precipitation (in Millimeters)",25],
     Avrg_WindSpeed: ["Average Windspeed (in Meters per Second)",25],
-    Avrg_MinTemperature: ["Average Lowest Temperature (in Celcius)",30],
-    Avrg_MaxTemperature:["Average Highest Temperature (in Celcius)",30]
+    Avrg_MinTemperature: ["Average Min Temperature (in Celcius)",30],
+    Avrg_MaxTemperature:["Average Max Temperature (in Celcius)",30]
 };
 var colorSets = [
-    ['#fbb4ae','#b3cde3','#ccebc5','#decbe4','#fed9a6'
-        ,'#78c679','#e5d8bd','#fddaec','#f2f2f2'],
-    ['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00'
-        ,'#006837','#a65628','#f781bf','#999999'],
-    ['#e41a1c','#377eb8','#4daf4a','#984ea3']
+    ['#b3cde3','#ccebc5','#decbe4','#fed9a6'
+        ,'#e5d8bd','#fddaec','#fbb4ae'],
+    ['#377eb8','#4daf4a','#984ea3','#ff7f00'
+        ,'#a65628','#f781bf','#e41a1c'],
+    ['#e41a1c','#377eb8','#984ea3','#4daf4a']
     ];
     
 

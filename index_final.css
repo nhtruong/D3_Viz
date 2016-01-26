@@ -7,6 +7,15 @@ svg{
     width: 980px;
 }
 
+#control_panel{
+    text-align: center;
+}
+
+#control_panel button {
+    width: 90%;
+    margin-bottom: 5px;
+}
+
 .main_title{
     text-align:center;
     width:100%;
@@ -49,6 +58,7 @@ svg.entry{
 
 .label{
     font-weight:bold;
+    font-size: 14px;
 }
 .label.x{
     font-size: 1.2em;
