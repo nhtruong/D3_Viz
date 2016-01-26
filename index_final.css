@@ -62,3 +62,27 @@ svg.entry{
     opacity:0;
 }
 
+.button{
+    cursor: pointer;
+}
+
+.button text{
+    fill: black;
+}
+
+.button ellipse{
+    fill:white;
+    stroke: gray;
+    stroke-width: 1px;
+}
+.button.hover ellipse{
+    fill: black;
+    stroke: lightgray;
+    stroke-width: 7px;
+    transition: fill 500ms, stroke 1000ms, stroke-width 500ms;
+}
+
+.button.hover text{
+    fill: white;
+    font-weight:bold;
+}

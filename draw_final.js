@@ -1,19 +1,19 @@
 /* global d3,all_data, flight_features, weather_features, 
- * global month_names, colorSets, xValue_funs, month_names */
+ * global month_names, colorSets, xValue_funs, month_names, month_fullnames */
 
 "use strict";
 
 var temp;
 
 var w = 1200, h = 640;
-var pt = 100, pr = 70, pb = 50, pl = 70;
+var pt = 110, pr = 70, pb = 50, pl = 70;
 var bottom = h-pb;
 var xRange = [pl,w-pr];
 var yRange = [h-pb,pt];
 var xCenter = (w-pr-pl)/2+pl;
 var yCenter = (h-pt-pb)/2+pt;
 var xCushion = .75;
-var yCushion = 1.1;
+var yCushion = 1.06;
 var colWidth_ratio = 0.50;
 var colShift_ratio = 0.50;
 
@@ -45,10 +45,10 @@ function setup_UI(){
 var curr_flight = "Flights";
 var curr_weather = "Avrg_Precipitation";
 var curr_mode, curr_year, curr_month;
-var legend;
+var legend, buttons;
 
 function init() {
-    draw({});
+    draw({year:1998});
 }
 
 var xAxis, yAxisL, yAxisR;
@@ -59,13 +59,11 @@ function draw(params){
     var flight = params.flight;
     var weather = params.weather;
     var mode;
-    
     if(year === 'undefined'){mode = "year";} 
     else if (month === 'undefined'){mode = "month";} 
     else {mode = "day";}
-    
     var data = get_data(mode, year, month);
-    if(mode !== curr_mode)
+    if(mode !== curr_mode || year !== curr_year || month !== curr_month)
         draw_xAxis(mode,data, year, month);
         
     if(mode !== curr_mode || flight !== curr_flight) {
@@ -78,6 +76,7 @@ function draw(params){
     }
     
     draw_legend(flight,weather);
+    draw_buttons(mode,year,month);
     draw_data(mode, data, flight, weather);
     
     curr_flight = flight;
@@ -208,8 +207,7 @@ function draw_data(mode,data, flight, weather) {
             .remove();
     
     var new_entries = entries.enter().append('svg')
-            .attr("class","entry")
-            .attr("x",xShift)
+            .attr("class","entry").attr("x",xShift)
             .on("mouseover",function(){
                 d3.select(this).select('.bg_bar')
                 .transition().ease("linear").duration(75)
@@ -226,11 +224,9 @@ function draw_data(mode,data, flight, weather) {
                     draw({year:curr_year, month: val});
                 if(mode !== "day")
                     d3.selectAll('.bg_bar').transition().duration(250)
-                            .style("opacity",0)
-                            .remove();
+                            .style("opacity",0);
             });
     
-        
     setTimeout(function(){
         new_entries.append('rect')
             .attr("class", "bg_bar")
@@ -276,7 +272,10 @@ function draw_data(mode,data, flight, weather) {
                 .delay(function(d,i){return (data.length-i)*delay_scale;})
                 .duration(750)
                 .style("fill",weather_features[weather][2])
-            .attr("cy", function (d) {return yScaleR(d.values[weather]);});
+            .attr("cy", function (d) {
+                var val = d.values[weather];
+                return val === undefined ? yScaleR(0) : yScaleR(val);
+            });
 }
 function draw_label(target, text,rotation, xAnchor, yAnchor, exClass, color) {
     if(color === undefined) color = "black";
@@ -292,33 +291,16 @@ function draw_label(target, text,rotation, xAnchor, yAnchor, exClass, color) {
 function draw_legend(flight,weather) {
     fadeOut(legend, 1000, 0, true);
     
-    var extractText = function(str){
-        str = str.split("(")[0].trim();
-        return str +" : ";
-    };
-    
-    var flight_text = extractText(flight_features[flight][0]);
-    var weather_text = extractText(weather_features[weather][0]);
-    
-    var midpoint = 320;
+    var midpoint = 100;
     var lineHeight = 30;
     var barH = lineHeight/1.6;
     var barW = 30;
     var barX = midpoint + 20;
-    
-    
 
     legend = svg.append('svg').attr("class","legend")
             .attr("x",pl).attr("y",40);
-    
     legend.append('rect').attr("class","bg_legend")
             .attr("height", 300).attr("width", 400);
-    
-    legend.append('text').text(flight_text)
-            .attr("text-anchor","end")
-            .attr("y",lineHeight/2)
-            .attr("x", midpoint);
-
     legend.append('rect').attr("class","in_bar")
             .style("fill",flight_features[flight][2])
             .attr("x",barX).attr("y",0)
@@ -334,12 +316,12 @@ function draw_legend(flight,weather) {
     
     
     midpoint = 800;
-    var circleR = barH/2;
-    var circleX = circleR + midpoint + 10;
+    var circleR = barH/2+2;
+    var circleX = midpoint -circleR - 10;
     var circleY = circleR;
     
-    legend.append('text').text(weather_text)
-            .attr("text-anchor","end")
+    legend.append('text').text("Weather Feature")
+            .attr("text-anchor","start")
             .attr("x",midpoint)
             .attr("y",lineHeight/2);
     
@@ -347,4 +329,69 @@ function draw_legend(flight,weather) {
             .attr("r",circleR).attr("cx", circleX).attr("cy",circleY)
             .style("fill",weather_features[weather][2]);
     fadeIn(legend, 750, 0, true);
+}
+function draw_buttons(mode,year,month) {
+    fadeOut(buttons, 500, 0, true);
+    if(mode === 'year') return;
+    var rx = 30, ry = 25;
+    var cx = pl/2 + rx;
+    var cy = 30 + ry;
+    buttons = svg.append('g');
+    
+    if(mode === 'month'){
+        var max_year = d3.max(get_data('year'),xValue_funs['year']);
+        var min_year = d3.min(get_data('year'),xValue_funs['year']);
+        var prev = +year <= min_year? null : +year-1;
+        var next = +year >= max_year? null : +year+1;
+        var prev_click = function(){draw({year:prev});};
+        var next_click = function(){draw({year:next});};
+        var return_click = function(){draw({});};
+    }else{
+        var prev = +month <= 1? null : +month-1;
+        var next = +month >= 12? null : +month+1;
+        var prev_ = prev;
+        var next_ = next;
+        var prev_click = function(){draw({year:year,month:prev_});};
+        var next_click = function(){draw({year:year,month:next_});};
+        var return_click = function(){draw({year:year});};
+        prev = month_names[prev-1];
+        next = month_names[next-1];
+    }
+    
+    if(prev !== null && prev_ !== null)
+        make_button("PREV",prev, prev_click);
+    
+    cx = w-rx-pr/2;
+    if(next !== null && next_ !== null)
+        make_button("NEXT",next, next_click);
+    
+    cx = xCenter;
+    rx = 40;
+    if(return_click !== undefined)
+    make_button("RETURN","RETURN", return_click);
+    
+    function make_button(text, hover, click){
+        var btn = buttons.append('g').classed('button', true);
+        var bg = btn.append('ellipse')
+                .attr("rx", rx).attr("ry", ry)
+                .attr("cx", cx).attr("cy", cy);
+        var txt = btn.append('text').text(text)
+                .attr("text-anchor", "middle")
+                .attr("x", cx).attr("y", function () {
+            var height = d3.select(this).style("height").split("px")[0];
+            return height / 3 + cy;
+        });
+        
+        btn.on("mouseover",function(){
+           btn.classed("hover",true);
+           txt.text(hover);
+           bg.transition().duration(250).attr("ry",
+           function(){return d3.select(this).attr("rx");});
+        }).on("mouseout",function(){
+           btn.classed("hover",false);
+           txt.text(text);
+           bg.transition().duration(250).ease('linear').attr("ry",ry);
+        }).on("click",click);
+        return btn;
+    }
 }
