@@ -6,14 +6,14 @@
 var temp;
 
 var w = 1200, h = 640;
-var pt = 20, pr = 70, pb = 50, pl = 70;
+var pt = 100, pr = 70, pb = 50, pl = 70;
 var bottom = h-pb;
 var xRange = [pl,w-pr];
 var yRange = [h-pb,pt];
 var xCenter = (w-pr-pl)/2+pl;
 var yCenter = (h-pt-pb)/2+pt;
 var xCushion = .75;
-var yCushion = 1.25;
+var yCushion = 1.1;
 var colWidth_ratio = 0.50;
 var colShift_ratio = 0.50;
 
@@ -45,6 +45,7 @@ function setup_UI(){
 var curr_flight = "Flights";
 var curr_weather = "Avrg_Precipitation";
 var curr_mode, curr_year, curr_month;
+var legend;
 
 function init() {
     draw({});
@@ -66,17 +67,17 @@ function draw(params){
     var data = get_data(mode, year, month);
     if(mode !== curr_mode)
         draw_xAxis(mode,data, year, month);
-    
+        
     if(mode !== curr_mode || flight !== curr_flight) {
         flight = get_default(flight, curr_flight);
         draw_yAxisL(data, flight);
     }
-    
     if(mode !== curr_mode || weather !== curr_weather) {
         weather = get_default(weather, curr_weather);
         draw_yAxisR(data, weather);
     }
     
+    draw_legend(flight,weather);
     draw_data(mode, data, flight, weather);
     
     curr_flight = flight;
@@ -85,14 +86,12 @@ function draw(params){
     curr_year = year;
     curr_month = month;
 }
-
 function fadeOut(element, duration, delay, removed){
     if(element ===  undefined) return;
     var trans = element.transition().delay(delay).duration(duration)
             .style("opacity",0).attr("opacity",0);
     if(removed === true) trans.remove();
 }
-
 function fadeIn(element, duration, delay, hide){
     if(element ===  undefined) return;
     if(hide === undefined || hide) 
@@ -100,7 +99,6 @@ function fadeIn(element, duration, delay, hide){
     element.transition().delay(delay).duration(duration)
             .style("opacity",1).attr("opacity",1);
 }
-
 function draw_xAxis(mode, data, year, month) {
     fadeOut(xAxis, 750, 0, true);
    
@@ -196,18 +194,6 @@ function draw_yAxisR(data, feature){
         weather_features[feature][2]);
     fadeIn(yAxisR, 1000, 0, true);
 }
-function draw_label(target, text,rotation, xAnchor, yAnchor, exClass, color) {
-    if(color === undefined) color = "black";
-    target.append('text').text(text)
-            .style("fill", color)
-            .attr("class", "label " + exClass)
-            .attr("text-anchor", "middle")
-            .attr("x", xAnchor)
-            .attr("y", yAnchor)
-            .attr("transform",
-                    "rotate(" + rotation + "," + xAnchor + "," + yAnchor + ")");
-}
-
 function draw_data(mode,data, flight, weather) {
     var colW = (xScale(2) - xScale(1));
     var colH = h-pt-pb;
@@ -258,11 +244,11 @@ function draw_data(mode,data, flight, weather) {
     
     function draw_flight(feature, shift, idClass, color) {
         new_entries.append('rect')
-                .attr("class", idClass)
+                .attr("class","data " + idClass)
                 .attr("y", bottom).attr("height", 0)
                 .attr("x", barX + shift).attr("width", barW);
         
-        svg.selectAll('rect.'+idClass).data(data,key)
+        svg.selectAll('rect.data.'+idClass).data(data,key)
                 .transition()
                 .delay(function(d,i){return i*delay_scale;})
                 .duration(750)
@@ -280,15 +266,85 @@ function draw_data(mode,data, flight, weather) {
     var dotS = colW/2;
     
     new_entries.append('circle')
-            .attr("class","wea_dot")
+            .attr("class","data wea_dot")
             .attr("cx",dotS)
             .attr("cy",0)
             .attr("r", radius);
     
-    svg.selectAll('circle.wea_dot').data(data,key)
+    svg.selectAll('circle.data.wea_dot').data(data,key)
                 .transition()
                 .delay(function(d,i){return (data.length-i)*delay_scale;})
                 .duration(750)
                 .style("fill",weather_features[weather][2])
             .attr("cy", function (d) {return yScaleR(d.values[weather]);});
+}
+function draw_label(target, text,rotation, xAnchor, yAnchor, exClass, color) {
+    if(color === undefined) color = "black";
+    target.append('text').text(text)
+            .style("fill", color)
+            .attr("class", "label " + exClass)
+            .attr("text-anchor", "middle")
+            .attr("x", xAnchor)
+            .attr("y", yAnchor)
+            .attr("transform",
+                    "rotate(" + rotation + "," + xAnchor + "," + yAnchor + ")");
+}
+function draw_legend(flight,weather) {
+    fadeOut(legend, 1000, 0, true);
+    
+    var extractText = function(str){
+        str = str.split("(")[0].trim();
+        return str +" : ";
+    };
+    
+    var flight_text = extractText(flight_features[flight][0]);
+    var weather_text = extractText(weather_features[weather][0]);
+    
+    var midpoint = 320;
+    var lineHeight = 30;
+    var barH = lineHeight/1.6;
+    var barW = 30;
+    var barX = midpoint + 20;
+    
+    
+
+    legend = svg.append('svg').attr("class","legend")
+            .attr("x",pl).attr("y",40);
+    
+    legend.append('rect').attr("class","bg_legend")
+            .attr("height", 300).attr("width", 400);
+    
+    legend.append('text').text(flight_text)
+            .attr("text-anchor","end")
+            .attr("y",lineHeight/2)
+            .attr("x", midpoint);
+
+    legend.append('rect').attr("class","in_bar")
+            .style("fill",flight_features[flight][2])
+            .attr("x",barX).attr("y",0)
+            .attr("height",barH).attr("width",barW);
+    legend.append('rect').attr("class","out_bar")
+            .style("fill",flight_features[flight][3])
+            .attr("x",barX).attr("y",barH+10)
+            .attr("height",barH).attr("width",barW);
+    legend.append('text').text('Flights leaving New Orleans')
+            .attr("x",barX+barW+10).attr("y",lineHeight/2);
+    legend.append('text').text('Flights heading to New Orleans')
+            .attr("x",barX+barW+10).attr("y",lineHeight/2+barH+10);
+    
+    
+    midpoint = 800;
+    var circleR = barH/2;
+    var circleX = circleR + midpoint + 10;
+    var circleY = circleR;
+    
+    legend.append('text').text(weather_text)
+            .attr("text-anchor","end")
+            .attr("x",midpoint)
+            .attr("y",lineHeight/2);
+    
+    legend.append('circle').attr("class","wea_dot")
+            .attr("r",circleR).attr("cx", circleX).attr("cy",circleY)
+            .style("fill",weather_features[weather][2]);
+    fadeIn(legend, 750, 0, true);
 }

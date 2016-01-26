@@ -53,3 +53,12 @@ svg.entry{
 .label.x{
     font-size: 1.2em;
 }
+.legend>text{
+    fill: #999;
+}
+
+.bg_legend{
+    fill:#eee;
+    opacity:0;
+}
+
