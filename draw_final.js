@@ -201,13 +201,24 @@ function draw_data(mode,data, flight, weather) {
     var count = data.length;
     var delay_scale = 500 / count;
     
-    var entries = svg.selectAll('svg.entry').data(data,key);
+
+    
+    if(mode !== curr_mode) {
+        temp = svg.selectAll('svg.entry.'+curr_mode)
+            .transition().duration(750).ease('linear')
+            .style("fill-opacity",0).style("stroke-opacity",0)
+            .remove();
+    }
+    
+    var selection = function(){return svg.selectAll('svg.entry.'+mode);};
+    
+    var entries = svg.selectAll('svg.entry.'+mode).data(data,key);
     entries.exit().transition().duration(750).ease('linear')
             .style("fill-opacity",0).style("stroke-opacity",0)
             .remove();
     
     var new_entries = entries.enter().append('svg')
-            .attr("class","entry").attr("x",xShift)
+            .attr("class","entry " + mode).attr("x",xShift)
             .on("mouseover",function(){
                 d3.select(this).select('.bg_bar')
                 .transition().ease("linear").duration(75)
@@ -227,6 +238,7 @@ function draw_data(mode,data, flight, weather) {
                             .style("opacity",0);
             });
     
+    
     setTimeout(function(){
         new_entries.append('rect')
             .attr("class", "bg_bar")
@@ -243,8 +255,7 @@ function draw_data(mode,data, flight, weather) {
                 .attr("class","data " + idClass)
                 .attr("y", bottom).attr("height", 0)
                 .attr("x", barX + shift).attr("width", barW);
-        
-        svg.selectAll('rect.data.'+idClass).data(data,key)
+        selection().selectAll('rect.data.'+idClass).data(data,key)
                 .transition()
                 .delay(function(d,i){return i*delay_scale;})
                 .duration(750)
@@ -267,7 +278,7 @@ function draw_data(mode,data, flight, weather) {
             .attr("cy",0)
             .attr("r", radius);
     
-    svg.selectAll('circle.data.wea_dot').data(data,key)
+    selection().selectAll('circle.data.wea_dot').data(data,key)
                 .transition()
                 .delay(function(d,i){return (data.length-i)*delay_scale;})
                 .duration(750)
