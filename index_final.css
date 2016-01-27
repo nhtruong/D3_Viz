@@ -1,24 +1,30 @@
-svg{
-    margin:15px auto;
+svg.master{
     display: block;
+    margin: auto;
 }
 .footer, .header{
     margin:10px auto;
-    width: 980px;
 }
-
+narration{
+    margin-top:20px;
+}
 #control_panel{
     text-align: center;
 }
 
-#control_panel button {
+#control_panel .ui-button {
     width: 90%;
     margin-bottom: 5px;
+    border-radius: 10px;
+}
+
+div.selector{
+    margin: 30px 0 15px 0;
+    font-size: 1.2em;
 }
 
 .main_title{
     text-align:center;
-    width:100%;
     font-weight: bold;
     font-size: 20px;
 }
