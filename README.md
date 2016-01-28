@@ -38,6 +38,7 @@ Bootstrap were also used to accomodate smaller displays.
 #### Data Sources:
 * The flight data was collected from http://stat-computing.org/dataexpo/2009/the-data.html
 * The weather data was collected from http://www.ncdc.noaa.gov/cdo-web/search?datasetid=GHCND
+
 This 10GB of raw data is condensed into a  CSV file by the Extractor.r script. This CSV file, named "MSY.csv", is used
 as the data source for the chart.
 
