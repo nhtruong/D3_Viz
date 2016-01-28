@@ -96,26 +96,26 @@ New Orlean's main hub of air transportation.",
 ["From 1988 to 2004, the number of flight to and from New Orleans was on the\n\
 the rise. When Katrina hit the city in late 2005, the total number of flights\n\
 took a nose dive in 2005, and slowly recovered in 2007 and 2008.", 
-8000, {flight: "Flights"}, function () {}],
+6000, {flight: "Flights"}, function () {}],
 ["If we take a closer look at the year 2005, the number of flights\n\
 scheduled for MSY dropped dramatically after August",
-6000,{flight: "Flights",year:2005},function(){}],
+5000,{flight: "Flights",year:2005},function(){}],
 ["Let's have a look at the number of flights cancelled. There were big spikes\n\
 in August and September.",
-6000,{flight: "Total_Cancelled",year:2005},function(){}],
+5000,{flight: "Total_Cancelled",year:2005},function(){}],
 ["We can also examine the number of diverted flights in 2005. A large amount \n\
 of flights heading to New Orleans were diverted away from the area in August,\n\
 and September.",
-7000,{flight: "Total_Diverted",year:2005},function(){}],
+6000,{flight: "Total_Diverted",year:2005},function(){}],
 ["Looking closer at August, there were about 15 flights that were diverted on\n\
 the 28th, the day before the hurricane, and 35 diverted flights the next day.\n\
 we also observe similar numbers on the 30th and 31st of the month.\n\
 Meanwhile, no flights leaving the area were diverted those days.",
-9000,{flight: "Total_Diverted",year:2005,month:8},function(){}],
+8000,{flight: "Total_Diverted",year:2005,month:8},function(){}],
 ["The chart now shows the percent of flights cancelled each day. We see that\n\
 all flights leaving New Orleans were cancelled on the day Katrina hit, as\n\
 well as many days later.",
-8000,{flight: "Perc_Cancelled",year:2005,month:8},function(){}],
+7000,{flight: "Perc_Cancelled",year:2005,month:8},function(){}],
 ["Feel free to explore on your own other aspects of MSY's operation between\n\
 1988 and 2008. Some weather data were also added for reference.",
 6000,{flight: "Perc_Delayed"},function(){narrating = false;}],
