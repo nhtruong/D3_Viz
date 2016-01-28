@@ -4,16 +4,15 @@
 The visualization provided by this project demonstrates how big of an impact Hurricane Katrina had on New Orleans's primary 
 port of air transportation. Some weather data are also provided for reference.
 
-The data were gathered from two different sources (check Resources for more info). Most of the data processing were done in R
-(This includes filtering, merging, cleaning, and some aggregations). Some processing were done in D3 so that I can practice some data
-manipulation in using this library.
+The data was gathered from two different sources (check Resources for more info). Most of the data processing were done in R
+(This includes filtering, merging, cleaning, and some aggregations). The rest of the processing was done in D3 so that I can practice data manipulation in using this library.
 
-The chart was drawn using pure D3. No other D3 graphing libraries were incorporated.
+The chart was drawn using pure D3. No other graphing libraries were incorporated.
 
 The UI used JQuery UI for buttons and Bootstrap for layout.
 
 ## Design
-The 20 years worth of data were grouped into years, months and days. For each period of time, one flight feature can be shown.
+The 20 years worth of data is grouped into years, months and days. For each period of time, one flight feature can be shown.
 The flight data are represented as columns. Each data entry is presented by two columns: One presenting flights to land at the airport,
 the other represents flights to take off at the airport. Additionally, the user can also select a weather feature to accompany 
 the graph. This feature is only supplementary and is presented as a dot for each data entry.
@@ -37,3 +36,14 @@ Bootstrap were also used to accomodate smaller displays.
 
 ## Resources
 #### Data Sources:
+* The flight data was collected from http://stat-computing.org/dataexpo/2009/the-data.html
+* The weather data was collected from http://www.ncdc.noaa.gov/cdo-web/search?datasetid=GHCND
+This 10GB of raw data is condensed into a  CSV file by the Extractor.r script. This CSV file, named "MSY.csv", is used
+as the data source for the chart.
+
+#### Coding References:
+* http://alignedleft.com/tutorials/d3
+* http://blog.greatrexpectations.com/2015/06/12/faking-mouse-events-in-d3/
+* http://stackoverflow.com/questions/30291452/d3-transitions-between-classes
+* https://github.com/mbostock/d3/wiki/API-Reference
+* http://www.w3schools.com/svg/svg_reference.asp
