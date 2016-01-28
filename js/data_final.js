@@ -155,5 +155,24 @@ $.fn.triggerSVGEvent = function (eventName) {
     return $(this);
 };
 
-// Healper function to write to console;
+// Helper function to write to console;
 function log(msg){console.log(msg);}
+
+// Helper funtion to fade out D3 elements
+function fadeOut(element, duration, delay, removed) {
+    if (element === undefined)
+        return;
+    var trans = element.transition().delay(delay).duration(duration)
+            .style("opacity", 0).attr("opacity", 0);
+    if (removed === true)
+        trans.remove();
+}
+// Helper funtion to fade in D3 elements
+function fadeIn(element, duration, delay, hide) {
+    if (element === undefined)
+        return;
+    if (hide === undefined || hide)
+        element.style("opacity", 0).attr("opacity", 0);
+    element.transition().delay(delay).duration(duration)
+            .style("opacity", 1).attr("opacity", 1);
+}

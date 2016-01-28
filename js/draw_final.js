@@ -20,6 +20,11 @@ var colShift_ratio = 0.50;
 var svg = d3.select("#chart").append("svg").classed("master", true)
         .style("width", w).style("height", h);
 
+// This function is called when the data is done loading.
+function init() {
+    setup_UI();
+    narrate_start();
+}
 
 function setup_UI() {
     var header = $('div.header');
@@ -83,6 +88,7 @@ function setup_UI() {
     $("#left_panel,#right_panel").hide();
 }
 
+// Variables for Narration
 var narrating = true;
 var idx = 0;
 var timers = [];
@@ -204,11 +210,6 @@ var curr_weather = "Avrg_Precipitation";
 var curr_mode, curr_year, curr_month;
 var legend, buttons;
 
-function init() {
-    setup_UI();
-    narrate_start();
-}
-
 var xAxis, yAxisL, yAxisR;
 var xScale, yScaleL, yScaleR;
 function draw(params) {
@@ -225,13 +226,16 @@ function draw(params) {
         mode = "day";
     }
     var data = get_data(mode, year, month);
+    // (Re)draw X-axis if there's a change in mode, year, or month.
     if (mode !== curr_mode || year !== curr_year || month !== curr_month)
         draw_xAxis(mode, data, year, month);
-
+    
+    // (Re)draw Left Y-axis if there's a change in mode or flight feature.
     if (mode !== curr_mode || flight !== curr_flight) {
         flight = get_default(flight, curr_flight);
         draw_yAxisL(all_data[mode], flight);
     }
+    // (Re)draw Right Y-axis if there's a change in mode or weather feature.
     if (mode !== curr_mode || weather !== curr_weather) {
         weather = get_default(weather, curr_weather);
         draw_yAxisR(all_data[mode], weather);
@@ -246,22 +250,6 @@ function draw(params) {
     curr_mode = mode;
     curr_year = year;
     curr_month = month;
-}
-function fadeOut(element, duration, delay, removed) {
-    if (element === undefined)
-        return;
-    var trans = element.transition().delay(delay).duration(duration)
-            .style("opacity", 0).attr("opacity", 0);
-    if (removed === true)
-        trans.remove();
-}
-function fadeIn(element, duration, delay, hide) {
-    if (element === undefined)
-        return;
-    if (hide === undefined || hide)
-        element.style("opacity", 0).attr("opacity", 0);
-    element.transition().delay(delay).duration(duration)
-            .style("opacity", 1).attr("opacity", 1);
 }
 function draw_xAxis(mode, data, year, month) {
     fadeOut(xAxis, 750, 0, true);
@@ -378,25 +366,27 @@ function draw_data(mode, data, flight, weather) {
     };
     var count = data.length;
     var delay_scale = 300 / count;
-
-
-
+    
+    // Clean the chart if there's a change in mode
     if (mode !== curr_mode) {
-        temp = svg.selectAll('svg.entry.' + curr_mode)
+        svg.selectAll('svg.entry.' + curr_mode)
                 .transition().duration(750).ease('linear')
                 .style("fill-opacity", 0).style("stroke-opacity", 0)
                 .remove();
     }
-
+    
+    // Function returning the root selection of data entries
     var selection = function () {
         return svg.selectAll('svg.entry.' + mode);
     };
-
+    
+    // Create a svg tag for each data entry
+    // The bars and dot of each entry are drawn inside these svg elements
     var entries = svg.selectAll('svg.entry.' + mode).data(data, key);
     entries.exit().transition().duration(750).ease('linear')
             .style("fill-opacity", 0).style("stroke-opacity", 0)
             .remove();
-
+    
     var new_entries = entries.enter().append('svg')
             .attr("id", function (d) {
                 return d.key.split(",").join("_");
@@ -422,13 +412,16 @@ function draw_data(mode, data, flight, weather) {
     });
 
 
+    // Delay the creation of hover element so that it won't interfere
+    // with the graph's transition/animation
     setTimeout(function () {
         new_entries.append('rect')
                 .attr("class", "bg_bar")
                 .attr("y", pt).attr("height", colH)
                 .attr("x", 0).attr("width", colW);
     }, 1000);
-
+    
+    // Start Drawing Bars for Flight Features
     var barW = colW * colWidth_ratio;
     var barS = barW / 2 * colShift_ratio;
     var barX = (colW - barW) / 2;
@@ -455,13 +448,14 @@ function draw_data(mode, data, flight, weather) {
 
     draw_flight("in_" + flight, barS, "in_bar", flight_features[flight][3]);
     draw_flight("out_" + flight, -barS, "out_bar", flight_features[flight][2]);
-
+    
     if (narrating) {
         svg.append('rect').attr("id","mouse_shield")
                 .attr('opacity', 0).attr('height', h).attr('width', w);
         return;
     }
-
+    
+    // Start Draw Circles for Weather Features
     var radius = colW / 5;
     var dotS = colW / 2;
 
@@ -584,17 +578,13 @@ function draw_buttons(mode, year, month) {
         prev = month_names[prev - 1];
         next = month_names[next - 1];
     }
-
-
+    
     if (next !== null && next_ !== null)
         make_button("Next", next, next_click);
 
     cx = cx - (2 * rx + 2 * pad + 2 * rxl);
     if (prev !== null && prev_ !== null)
         make_button("Prev", prev, prev_click);
-
-
-
 
     cx = cx + 2 * rxl;
     rx = rxl;
