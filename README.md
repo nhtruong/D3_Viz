@@ -35,7 +35,7 @@ I showed the visualization to 3 different people (Friends and coworkers). Below 
 * Other than refreshing the page, there's no way to return to the previous view.
 * A legend box is needed. It's impossible to tell what the different colored bars mean.
 * The graph is unnecessarily big. It doesn't look nice on smaller or low-resolution screens.
-* 
+
 #### Final Product:
 * The narration is nice. Automatic transition during narration is really cool.
 * You could add Next/Prev buttons for the Narration (Note: Though this is a valid point, I'm not adding these buttons due
