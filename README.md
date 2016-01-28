@@ -5,7 +5,7 @@ The visualization provided by this project demonstrates how big of an impact Hur
 port of air transportation. Some weather data are also provided for reference.
 
 The data was gathered from two different sources (check Resources for more info). Most of the data processing were done in R
-(This includes filtering, merging, cleaning, and some aggregations). The rest of the processing was done in D3 so that I can practice data manipulation in using this library.
+(This includes filtering, merging, cleaning, and some aggregations). The rest of the processing was done in D3 so that I could practice data manipulation using this library.
 
 The chart was drawn using pure D3. No other graphing libraries were incorporated.
 
