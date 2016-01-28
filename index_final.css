@@ -8,6 +8,16 @@ svg.master{
 narration{
     margin-top:20px;
 }
+
+#director {
+    margin: 30px 0 15px 0;
+}
+
+#narrator{
+    font-style: italic;
+    font-size: 1.1em;
+}
+
 #control_panel{
     text-align: center;
 }

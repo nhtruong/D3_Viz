@@ -87,22 +87,32 @@ function setup_UI() {
 
     }
     selector_weather.buttonset();
+    
+    $("#left_panel,#right_panel").hide();
 }
 
 var narrating = true;
 var narrator = [];
+
+$('#btn_start').button().click(function(){narrate_start();}).hide();
+$('#btn_skip').button().click(function(){narrate_stop();});
 function narrate_start() {
     narrating = true;
     narrator = [];
-
+    $("#left_panel,#right_panel").slideUp(1000);
+    $('#btn_start').slideUp(600);
+    $("#btn_skip, #narrator").slideDown(600);
     var lines = [
-        ["Hello", 
-            3000, {flight: "Flights"}, function () {
-                
-            }], 
-        ["Hi", 
-            2000, {year:2005}, function () {
-                
+        ["Hurricane Katrina was the most catastrophic natural disaster that\n\
+has ever passed through New Orleans. In this graph, we will examine how this\n\
+hurrican affected Louis Armstrong International Airport, or MSY -\n\
+New Orlean's main hub of air transportation.", 
+            7000, {flight: "Flights"}, function () {}], 
+        ["From 1988 to 2004, the number of flight to and from was on the\n\
+the rise. When Katrina hit the city in late 2005, the total number of flights\n\
+took a nose dive in 2006, slowly recovered in 2007 and 2008.", 
+            7000, {}, function () {
+                $('svg#2005').triggerSVGEvent("mouseover");
             }]
     ];
     
@@ -120,7 +130,7 @@ function narrate_start() {
         
         draw(params);
         setTimeout(trailer, 500);
-        $('#narrator').html(msg);
+        $('#narrator').fadeOut(250,function(){$(this).html(msg).fadeIn(500);});
         
         var timer = setTimeout(function(){narrate(idx+1);}, duration);
         narrator.push(timer);
@@ -128,11 +138,11 @@ function narrate_start() {
     
     narrate(0);
 }
-
-
-$('#director button').button().click(function(){narrate_stop();});
 function narrate_stop() {
     narrating = false;
+    $("#btn_skip, #narrator").slideUp(600);
+    $('#btn_start').slideDown(600);
+    $('#left_panel, #right_panel').slideDown(1000);
     svg.selectAll('#mouse_shield').remove();
     draw({year:curr_year, month:curr_month});
     for(var i in narrator)
@@ -450,16 +460,16 @@ function draw_legend(flight, weather) {
     legend.append('rect').attr("class", "bg_legend")
             .attr("height", 300).attr("width", 400);
     legend.append('rect').attr("class", "in_bar")
-            .style("fill", flight_features[flight][2])
+            .style("fill", flight_features[flight][3])
             .attr("x", barX).attr("y", 0)
             .attr("height", barH).attr("width", barW);
     legend.append('rect').attr("class", "out_bar")
-            .style("fill", flight_features[flight][3])
+            .style("fill", flight_features[flight][2])
             .attr("x", barX).attr("y", barH + 10)
             .attr("height", barH).attr("width", barW);
-    legend.append('text').text('Flights leaving New Orleans')
+    legend.append('text').text('Flights headed to New Orleans')
             .attr("x", barX + barW + 10).attr("y", lineHeight / 2);
-    legend.append('text').text('Flights heading to New Orleans')
+    legend.append('text').text('Flights leaving New Orleans')
             .attr("x", barX + barW + 10).attr("y", lineHeight / 2 + barH + 10);
 
 
