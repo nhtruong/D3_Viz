@@ -17,22 +17,28 @@ The flight data are represented as columns. Each data entry is presented by two 
 the other represents flights to take off at the airport. Additionally, the user can also select a weather feature to accompany 
 the graph. This feature is only supplementary and is presented as a dot for each data entry.
 
-A narration will play automatically when the page is loaded to guide the user through the chart and show the effects Katrina had
+
+SMALL DESIGN CHOICES AFTER RECEIVING FEEDBACK:
+* A narration will play automatically when the page is loaded to guide the user through the chart and show the effects Katrina had
 on the operation of the airport. This narration can be skipped. After the narration, the user is free to explore the chart.
-
-Dropdown Boxes were originally used to select data features. They were later replace with Radio Buttons, which are transformed
+* Dropdown Boxes were originally used to select data features. They were later replace with Radio Buttons, which are transformed
 into Buttons Sets using JQuery UI. This change halves the number of mouse clicks needed to change a feature on the graph.
-
-The size of the chart was reduced. The feature selectors were moved to from the bottom to the left of the chart. This was to avoid
+* The size of the chart was reduced. The feature selectors were moved to from the bottom to the left of the chart. This was to avoid
 the vertical scrollbar.
-
-Bootstrap were also used to accomodate smaller displays.
+* Bootstrap were also used to accomodate smaller displays.
 
 ## Feedback
+I showed the visualization to 3 different people (Friends and coworkers). Below is a summary of their feedback.
+#### First Sketch:
+* Colorful and clear looking chart.
 * There are so many graphs. What should the viewer focus on?
 * Other than refreshing the page, there's no way to return to the previous view.
 * A legend box is needed. It's impossible to tell what the different colored bars mean.
 * The graph is unnecessarily big. It doesn't look nice on smaller or low-resolution screens.
+#### Final Product:
+* The narration is nice. Automatic transition during narration is really cool.
+* You could add Next/Prev buttons for the Narration (Note: Though this is a valid point, I'm not adding these buttons due
+to time constrain)
 
 ## Resources
 #### Data Sources:
