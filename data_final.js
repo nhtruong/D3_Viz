@@ -148,6 +148,7 @@ var month_fullnames = ["January", "February", "March", "April", "May", "June",
 
 // Helper function to trigger SVG events
 $.fn.triggerSVGEvent = function (eventName) {
+    if($(this) === undefined) return;
     var event = document.createEvent('SVGEvents');
     event.initEvent(eventName, true, true);
     this[0].dispatchEvent(event);
