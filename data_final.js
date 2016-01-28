@@ -144,5 +144,15 @@ var month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
 
 var month_fullnames = ["January", "February", "March", "April", "May", "June", 
     "July", "August", "September", "October", "November", "December"];  
-    
- function log(msg){console.log(msg);}
+ 
+
+// Helper function to trigger SVG events
+$.fn.triggerSVGEvent = function (eventName) {
+    var event = document.createEvent('SVGEvents');
+    event.initEvent(eventName, true, true);
+    this[0].dispatchEvent(event);
+    return $(this);
+};
+
+// Healper function to write to console;
+function log(msg){console.log(msg);}

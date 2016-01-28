@@ -21,14 +21,6 @@ var svg = d3.select("#chart").append("svg").classed("master", true)
         .style("width", w).style("height", h);
 
 
-// Helper function to trigger SVG events
-$.fn.triggerSVGEvent = function (eventName) {
-    var event = document.createEvent('SVGEvents');
-    event.initEvent(eventName, true, true);
-    this[0].dispatchEvent(event);
-    return $(this);
-};
-
 function setup_UI() {
     var header = $('div.header');
 
@@ -92,62 +84,105 @@ function setup_UI() {
 }
 
 var narrating = true;
-var narrator = [];
+var idx = 0;
+var timers = [];
+var highlight = [];
+var lines = [
+["Hurricane Katrina was the most catastrophic natural disaster that\n\
+has ever passed through New Orleans. In this graph, we will examine how this\n\
+hurrican affected Louis Armstrong International Airport, or MSY -\n\
+New Orlean's main hub of air transportation.", 
+6000, {flight: "Flights"}, function () {}], 
+["From 1988 to 2004, the number of flight to and from was on the\n\
+the rise. When Katrina hit the city in late 2005, the total number of flights\n\
+took a nose dive in 2005, and slowly recovered in 2007 and 2008.", 
+8000, {flight: "Flights"}, function () {}],
+["If we take a closer look at the year 2005, the number of flights\n\
+scheduled for MSY dropped dramatically after August",
+6000,{flight: "Flights",year:2005},function(){}],
+["Let's have a look at the number of flights cancelled. There were big spikes\n\
+in August and September.",
+6000,{flight: "Total_Cancelled",year:2005},function(){}],
+["We can also examine the number of diverted flights in 2005. A large amount \n\
+of flights heading to New Orleans were diverted away from the area in August,\n\
+and September.",
+7000,{flight: "Total_Diverted",year:2005},function(){}],
+["Looking closer at August, there were about 15 flights that were diverted on\n\
+the 28th, the day before the hurrican, and 35 diverted flights the next day.\n\
+we also observe similar numbers on the 30th and 31st of the month.\n\
+meanwhile, no flights leaving the area were diverted.",
+9000,{flight: "Total_Diverted",year:2005,month:8},function(){}],
+["The chart now shows the percent of flights cancelled each day. We see that\n\
+all flights leaving New Orleans were cancelled on the day Katrina hit, as\n\
+well as the days after.",
+8000,{flight: "Perc_Cancelled",year:2005,month:8},function(){}],
+["Feel free to explore own your own other aspect of MSY's operation between\n\
+1988 and 2008. Some weather data were also added for reference.",
+5000,{flight: "Perc_Delayed"},function(){}]
+];
 
 $('#btn_start').button().click(function(){narrate_start();}).hide();
 $('#btn_skip').button().click(function(){narrate_stop();});
 function narrate_start() {
     narrating = true;
-    narrator = [];
-    $("#left_panel,#right_panel").slideUp(1000);
-    $('#btn_start').slideUp(600);
-    $("#btn_skip, #narrator").slideDown(600);
-    var lines = [
-        ["Hurricane Katrina was the most catastrophic natural disaster that\n\
-has ever passed through New Orleans. In this graph, we will examine how this\n\
-hurrican affected Louis Armstrong International Airport, or MSY -\n\
-New Orlean's main hub of air transportation.", 
-            7000, {flight: "Flights"}, function () {}], 
-        ["From 1988 to 2004, the number of flight to and from was on the\n\
-the rise. When Katrina hit the city in late 2005, the total number of flights\n\
-took a nose dive in 2006, slowly recovered in 2007 and 2008.", 
-            7000, {}, function () {
-                $('svg#2005').triggerSVGEvent("mouseover");
-            }]
-    ];
+    idx = 0;
+    $("#left_panel,#right_panel").fadeOut(500);
+    $('#btn_start').slideUp(500);
+    $('#narrator').html('');
+    $("#btn_skip, #narrator").slideDown(500);
+    
     
     var len = lines.length;
-    var narrate = function narrate(idx) {
-        if(idx === len){
-            narrate_stop();
-            return;
-        } 
-        
-        var msg = lines[idx][0];
-        var duration = lines[idx][1];
-        var params = lines[idx][2];
-        var trailer = lines[idx][3];
-        
-        draw(params);
-        setTimeout(trailer, 500);
-        $('#narrator').fadeOut(250,function(){$(this).html(msg).fadeIn(500);});
-        
-        var timer = setTimeout(function(){narrate(idx+1);}, duration);
-        narrator.push(timer);
-    };
+    //idx = len-1;
     
-    narrate(0);
+    setTimeout(narrate,500);
 }
+
+var narrate = function narrate() {
+    if(idx >= lines.length){
+        narrate_stop();
+        return;
+    } 
+
+    var msg = lines[idx][0];
+    var duration = lines[idx][1];
+    var params = lines[idx][2];
+    var trailer = lines[idx][3];
+    idx++;
+    draw(params);
+    clear_Highlight();
+    timers.push(setTimeout(trailer, 1500));
+    $('#narrator').fadeOut(250,function(){$(this).html(msg).fadeIn(500);});
+
+    var timer = setTimeout(function(){narrate();}, duration);
+    timers.push(timer);
+};
 function narrate_stop() {
     narrating = false;
-    $("#btn_skip, #narrator").slideUp(600);
+    $("#btn_skip, #narrator").slideUp(500);
     $('#btn_start').slideDown(600);
-    $('#left_panel, #right_panel').slideDown(1000);
+    $('#left_panel, #right_panel').delay(600).fadeIn(1200);
     svg.selectAll('#mouse_shield').remove();
+    
+    $('#selector_flight'+curr_flight).next().find('span').click();
     draw({year:curr_year, month:curr_month});
-    for(var i in narrator)
-        clearTimeout(narrator[i]);
+    clear_Highlight();
+    while(timers.length>0)
+        clearTimeout(timers.pop());
 }
+var highlight_add = function(ids){
+    ids = ids.split(" ");
+    while(ids.length>0) {
+        var id = 'svg#'+ids.pop();
+        highlight.push(id);
+        $(id).triggerSVGEvent("mouseover");
+    }
+};
+var clear_Highlight = function(){
+    while(highlight.length > 0){
+        $(highlight.pop()).triggerSVGEvent("mouseout");
+    }
+};
 
 var curr_flight = "Flights";
 var curr_weather = "Avrg_Precipitation";
@@ -157,7 +192,6 @@ var legend, buttons;
 function init() {
     setup_UI();
     narrate_start();
-    draw({});
 }
 
 var xAxis, yAxisL, yAxisR;
@@ -181,11 +215,11 @@ function draw(params) {
 
     if (mode !== curr_mode || flight !== curr_flight) {
         flight = get_default(flight, curr_flight);
-        draw_yAxisL(data, flight);
+        draw_yAxisL(all_data[mode], flight);
     }
     if (mode !== curr_mode || weather !== curr_weather) {
         weather = get_default(weather, curr_weather);
-        draw_yAxisR(data, weather);
+        draw_yAxisR(all_data[mode], weather);
     }
 
     draw_legend(flight, weather);
@@ -350,7 +384,7 @@ function draw_data(mode, data, flight, weather) {
 
     var new_entries = entries.enter().append('svg')
             .attr("id", function (d) {
-                return d.key;
+                return d.key.split(",").join("_");
             })
             .attr("class", "entry " + mode).attr("x", xShift)
             .on("mouseover", function () {
