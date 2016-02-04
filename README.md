@@ -30,6 +30,7 @@ observer the change in the length of the bars from one data entry to the next ea
 * While both a scatter plot and a line chart can be displayed nicely on top of a bar chart, I didn't go for the line chart to encode 
 the weather features because the lines it creates would be quite distracting. I want the focus to be on the bar chart.
 Moreover, the columns of data are pretty close to each other. It's easy to see the shift in weather from one column to another without the aid of the lines.
+* The weather features are not shown during most of the narration because they are only supplementary. The narrative is meant to concentrate on the flight data.
 
 
 
